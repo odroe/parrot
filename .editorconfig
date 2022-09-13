@@ -1,0 +1,7 @@
+[*.dart]
+tab_width = 4
+indent_size = 4
+indent_style = space
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
