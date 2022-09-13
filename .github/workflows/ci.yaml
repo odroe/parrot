@@ -31,4 +31,5 @@ jobs:
       - run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
       - uses: codecov/codecov-action@v1.0.7
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage.lcov
