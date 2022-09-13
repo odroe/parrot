@@ -1,0 +1,23 @@
+name: build
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  test:
+    defaults:
+      run:
+        working-directory: ./
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: cedx/setup-dart@v3
+        with:
+          version: "2.8.0"
+      - run: dart --version
+      - run: dart test --coverage=coverage
+      - run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
+      - uses: codecov/codecov-action@v1.0.7
+        with:
+          files: converage.lcov
