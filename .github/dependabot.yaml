@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  # Pub spec
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: daily
