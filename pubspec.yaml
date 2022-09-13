@@ -1,6 +1,6 @@
 name: parrot
 description: > 
-  🦜 Parrot - A progressive framework for building efficient, reliable and scalable Dart applications.
+  Parrot is a progressive framework for building efficient, reliable and scalable Dart applications.
 version: 0.0.0
 repository: https://github.com/odroe/parrot
 
