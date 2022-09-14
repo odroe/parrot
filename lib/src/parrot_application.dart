@@ -50,7 +50,7 @@ class _ParrotApplicationImpl implements ParrotApplication {
   T get<T extends Object>(Type type) => root.get<T>(type);
 
   @override
-  ParrotContext select(Type module) => root.select(module);
+  ModuleContext select(Type module) => root.select(module);
 
   @override
   T resolve<T extends Object>(Type type) => root.resolve<T>(type);

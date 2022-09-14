@@ -56,8 +56,8 @@ class Injectable {
 /// }
 /// ```
 class Inject {
-  const Inject([this.token]);
+  const Inject([this.type]);
 
   /// The token of the service.
-  final Object? token;
+  final Type? type;
 }

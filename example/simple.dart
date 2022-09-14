@@ -1,5 +1,8 @@
 import 'package:parrot/parrot.dart';
 
+@Module()
+class UserModule {}
+
 @Injectable()
 class SimpleService {
   void say() {
@@ -8,13 +11,21 @@ class SimpleService {
 }
 
 @Module(
+  dependencies: [UserModule],
   providers: [SimpleService],
 )
 class SimpleModule {}
 
-void main() {
-  final app = ParrotApplication(SimpleModule);
-  final SimpleService service = app.resolve(SimpleService);
+@Module(
+  dependencies: [SimpleModule],
+)
+class AppModule {}
 
-  service.say(); // Hello, 🦜 Parrot!
+void main() {
+  final app = ParrotApplication(AppModule);
+
+  print(app.select(UserModule).module);
+  // final SimpleService service = app.resolve(SimpleService);
+
+  // service.say(); // Hello, 🦜 Parrot!
 }
