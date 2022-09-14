@@ -9,6 +9,9 @@ abstract class ParrotContext {
   /// Allows navigating through the modules tree, for example, to pull out a specific instance from the selected module.
   ParrotContext select(Type module);
 
-  /// Retrieves an instance of either injectable or controller, otherwise, throws exception.
-  Object get(Type typeOrToken);
+  /// Retrieves an instance of either injectable, otherwise, throws exception.
+  T get<T>(Type typeOrToken);
+
+  /// Resolve an instance of either injectable, otherwise, throws exception.
+  T resolve<T>(Type typeOrToken);
 }

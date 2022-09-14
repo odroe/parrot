@@ -26,8 +26,11 @@ class _ParrotApplicationImpl extends ParrotApplication {
   ParrotContext get root => container.get(module) as ParrotContext;
 
   @override
-  Object get(Type typeOrToken) => root.get(typeOrToken);
+  T get<T>(Type typeOrToken) => root.get<T>(typeOrToken);
 
   @override
   ParrotContext select(Type module) => root.select(module);
+
+  @override
+  T resolve<T>(Type typeOrToken) => root.resolve<T>(typeOrToken);
 }
