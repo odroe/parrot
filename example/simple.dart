@@ -21,10 +21,12 @@ class SimpleModule {}
 )
 class AppModule {}
 
-void main() {
+void main() async {
   final app = ParrotApplication(AppModule);
 
-  app.initialize();
+  await app.initialize();
+
+  print(app.container.keys);
 
   // print(app.select(UserModule).module);
   // final SimpleService service = app.resolve(SimpleService);

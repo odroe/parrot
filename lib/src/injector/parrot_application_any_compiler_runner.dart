@@ -24,11 +24,22 @@ mixin ParrotApplicationAnyCompilerRunner on ParrotApplicationBase
   Future<void> runAnyCompiler(Type type) async {
     final TypeMirror mirror = reflectType(type);
 
-    /// Get all [AnyCompiler] annotations.
-    final Iterable<AnyCompiler> annotations = mirror.metadata
+    // Get all [AnyCompiler] annotations from the [type].
+    final List<AnyCompiler> annotations = mirror.metadata
         .map((InstanceMirror annotation) => annotation.reflectee)
-        .whereType<AnyCompiler>();
+        .whereType<AnyCompiler>()
+        .toList();
 
-    print(annotations);
+    // Sort the annotations by [uses].
+    annotations.sort((AnyCompiler a, AnyCompiler b) {
+      if (a.uses.contains(b.runtimeType)) return 1;
+      if (b.uses.contains(a.runtimeType)) return -1;
+      return 0;
+    });
+
+    // Run the annotations.
+    for (final AnyCompiler annotation in annotations) {
+      await annotation.compile(this, mirror);
+    }
   }
 }

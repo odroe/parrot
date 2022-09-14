@@ -1,6 +1,7 @@
 import 'dart:mirrors';
 
 import '../parrot_container.dart';
+import 'any_compiler_runner.dart';
 
 /// Any compiler.
 ///
@@ -19,11 +20,11 @@ import '../parrot_container.dart';
 ///   const SimpleCompiler();
 ///
 ///   @override
-///   Future<void> compile(ParrotContainer container, Mirror mirror) async {
+///   Future<void> compile(AnyCompilerRunner runner, Mirror mirror) async {
 ///     // If the mirror not a class mirror, return.
 ///     if (mirror is! ClassMirror) return;
 ///
-///     container[mirror.reflectedType] = mirror.newInstance(Symbol(''), []);
+///     runner.container[mirror.reflectedType] = mirror.newInstance(Symbol(''), []);
 ///   }
 /// }
 ///
@@ -44,5 +45,5 @@ abstract class AnyCompiler {
   ///
   /// - [container]: The container is in current application.
   /// - [mirror]: The mirror of the annotated class.
-  Future<void> compile(ParrotContainer container, Mirror mirror);
+  Future<void> compile(AnyCompilerRunner runner, Mirror mirror);
 }

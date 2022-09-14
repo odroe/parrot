@@ -1,5 +1,3 @@
-import 'dart:mirrors';
-
 import '../annotations/module.dart';
 import '../exceptions/module_not_found_exception.dart';
 import '../exceptions/instance_not_found_exception.dart';
@@ -10,9 +8,9 @@ class ModuleContext extends Module implements ParrotContext {
   const ModuleContext({
     required ParrotContainer container,
     required this.module,
-    super.dependencies,
-    super.providers,
-    super.exports,
+    required super.dependencies,
+    required super.providers,
+    required super.exports,
   }) : _container = container;
 
   final ParrotContainer _container;
@@ -64,71 +62,3 @@ class ModuleContext extends Module implements ParrotContext {
     return false;
   }
 }
-
-// class _ModuleCompiler extends _ModuleContextImpl {
-//   _ModuleCompiler({
-//     required super.container,
-//     required super.module,
-//     super.dependencies,
-//     super.exports,
-//     super.providers,
-//   });
-
-//   factory _ModuleCompiler.factory(ParrotContainer container, Type module) {
-//     // If the module is already compiled, return it.
-//     if (container.containsKey(module)) {
-//       return container[module] as _ModuleCompiler;
-//     }
-
-//     final ClassMirror classMirror = reflectClass(module);
-//     final _ModuleCompiler instance = createContext(classMirror, container);
-
-//     // Register the instance to container.
-//     container[module] = instance;
-
-//     // Compile the module dependencies.
-//     for (final Type dependency in instance.dependencies) {
-//       _ModuleCompiler.factory(container, dependency);
-//     }
-
-//     // Compile the module providers.
-//     // for (final Type provider in context.providers) {
-//     //   compile(container, provider);
-//     // }
-
-//     return instance;
-//   }
-
-//   /// Create a module context.
-//   static _ModuleCompiler createContext(
-//     ClassMirror classMirror,
-//     ParrotContainer container,
-//   ) {
-//     // Get module annotation.
-//     final Module annotation = findModuleAnnotation(classMirror);
-
-//     // Create module context.
-//     return _ModuleCompiler(
-//       container: container,
-//       module: classMirror.reflectedType,
-//       dependencies: annotation.dependencies,
-//       providers: annotation.providers,
-//       exports: annotation.exports,
-//     );
-//   }
-
-//   /// Find a module annotation.
-//   static Module findModuleAnnotation(ClassMirror classMirror) {
-//     final Iterable<InstanceMirror> metadata =
-//         classMirror.metadata.where((element) => element.reflectee is Module);
-
-//     if (metadata.isEmpty) {
-//       throw ArgumentError('The module must be annotated with @Module()');
-//     } else if (metadata.length > 1) {
-//       throw ArgumentError(
-//           'The module must be annotated with only one @Module()');
-//     }
-
-//     return metadata.first.reflectee;
-//   }
-// }
