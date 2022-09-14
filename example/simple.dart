@@ -24,7 +24,9 @@ class AppModule {}
 void main() {
   final app = ParrotApplication(AppModule);
 
-  print(app.select(UserModule).module);
+  app.initialize();
+
+  // print(app.select(UserModule).module);
   // final SimpleService service = app.resolve(SimpleService);
 
   // service.say(); // Hello, 🦜 Parrot!

@@ -1,57 +1,108 @@
+import 'package:meta/meta.dart';
+
 import 'injector/module_context.dart';
+import 'injector/parrot_application_any_compiler_runner.dart';
 import 'parrot_container.dart';
 import 'parrot_context.dart';
 
-abstract class ParrotApplication implements ParrotContext {
-  factory ParrotApplication(
-    Type module, {
-    ParrotContainer? container,
-  }) = _ParrotApplicationImpl;
-
-  /// The application container.
-  ParrotContainer get container;
-}
-
-class _ParrotApplicationImpl implements ParrotApplication {
-  _ParrotApplicationImpl._({
-    required this.container,
-    required this.module,
-  });
-
-  factory _ParrotApplicationImpl(
-    Type module, {
+/// 🦜 Parrot application base class.
+abstract class ParrotApplicationBase implements ParrotContext {
+  ParrotApplicationBase(
+    this.module, {
     ParrotContainer? container,
   }) {
-    final ParrotContainer resolvedContainer = container ?? ParrotContainer();
-    final _ParrotApplicationImpl app = _ParrotApplicationImpl._(
-      container: resolvedContainer,
-      module: module,
-    );
-
-    // Add the application to the container.
-    resolvedContainer[ParrotApplication] = app;
-
-    // Compile the module.
-    ModuleContext.compile(resolvedContainer, module);
-
-    return app;
+    this.container = container ?? ParrotContainer();
   }
 
-  @override
-  final ParrotContainer container;
+  /// The application container.
+  late final ParrotContainer container;
 
-  /// The application root module.
+  /// Current Parrot application module.
   final Type module;
 
-  /// Get the root module context.
-  ParrotContext get root => container[module]!;
+  /// The application has been initialized.
+  bool get initialized => _initialized;
 
-  @override
-  T get<T extends Object>(Type type) => root.get<T>(type);
+  /// Run [initialize] method set [initialized] to true.
+  bool _initialized = false;
 
-  @override
-  ModuleContext select(Type module) => root.select(module);
+  /// Initialize the application.
+  @mustCallSuper
+  Future<void> initialize() async {
+    // If the application has been initialized, throw an error.
+    if (initialized) {
+      throw Exception('The Parrot application has been initialized.');
+    }
 
-  @override
-  T resolve<T extends Object>(Type type) => root.resolve<T>(type);
+    // Register the application to container.
+    container.putIfAbsent(ParrotApplication, () => this);
+
+    // Set initialized to true.
+    _initialized = true;
+  }
 }
+
+/// Implementation [ParrotContext] interface for [ParrotApplicationBase].
+///
+/// Module for proxying root node.
+mixin ParrotApplicationContext on ParrotApplicationBase
+    implements ParrotContext {
+  /// Current context module.
+  @internal
+  late final ModuleContext context;
+
+  @override
+  T get<T extends Object>(Type type) => context.get<T>(type);
+
+  @override
+  T resolve<T extends Object>(Type type) => context.resolve<T>(type);
+
+  @override
+  ModuleContext select(Type module) => context.select(module);
+}
+
+class ParrotApplication = ParrotApplicationBase
+    with ParrotApplicationContext, ParrotApplicationAnyCompilerRunner;
+
+// class _ParrotApplicationImpl
+//     with AnyCompilerRunner
+//     implements ParrotApplication {
+//   _ParrotApplicationImpl._({
+//     required this.container,
+//     required this.module,
+//   });
+
+//   factory _ParrotApplicationImpl(
+//     Type module, {
+//     ParrotContainer? container,
+//   }) {
+//     final ParrotContainer resolvedContainer = container ?? ParrotContainer();
+//     final _ParrotApplicationImpl app = _ParrotApplicationImpl._(
+//       container: resolvedContainer,
+//       module: module,
+//     );
+
+//     // Add the application to the container.
+//     resolvedContainer[ParrotApplication] = app;
+
+//     return app;
+//   }
+
+//   @override
+//   final ParrotContainer container;
+
+//   /// The application root module.
+//   final Type module;
+
+//   /// Get the root module context.
+//   ParrotContext get root => container[module]!;
+
+//   @override
+//   T get<T extends Object>(Type type) => root.get<T>(type);
+
+//   @override
+//   ModuleContext select(Type module) => root.select(module);
+
+//   @override
+//   T resolve<T extends Object>(Type type) => root.resolve<T>(type);
+// }

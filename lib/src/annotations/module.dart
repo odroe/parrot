@@ -1,18 +1,8 @@
-/// Parrot module annotation.
-///
-/// A module is a class that contains bindings.
-///
-/// Example:
-/// ```dart
-/// @Module(
-///   dependencies: [ModuleA, ModuleB],
-/// )
-/// class AppModule {}
-///
-/// final app = ParrotApplication(AppModule);
-/// ```
-class Module {
-  const Module({
+import '../injector/any_compiler.dart';
+import '../injector/module_compiler.dart';
+
+abstract class ModuleAnnotation extends AnyCompiler {
+  const ModuleAnnotation({
     this.dependencies = const [],
     this.providers = const [],
     this.exports = const [],
@@ -31,3 +21,18 @@ class Module {
   /// The module is global.
   final bool global;
 }
+
+/// Parrot module annotation.
+///
+/// A module is a class that contains bindings.
+///
+/// Example:
+/// ```dart
+/// @Module(
+///   dependencies: [ModuleA, ModuleB],
+/// )
+/// class AppModule {}
+///
+/// final app = ParrotApplication(AppModule);
+/// ```
+class Module = ModuleAnnotation with ModuleCompiler;
