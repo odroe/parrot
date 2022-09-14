@@ -19,11 +19,11 @@ class Module {
   });
 
   /// The module registed service providers.
-  final Iterable<Object> providers;
+  final Iterable<Type> providers;
 
   /// The module dependency modules.
-  final Iterable<Object> dependencies;
+  final Iterable<Type> dependencies;
 
   /// Exported providers and dependencies.
-  final Iterable<Object> exports;
+  final Iterable<Type> exports;
 }

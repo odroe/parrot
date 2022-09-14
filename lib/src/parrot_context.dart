@@ -1,17 +1,19 @@
-import 'injector/parrot_container.dart';
-
 /// Parrot context.
 ///
 /// The context is a container for modules.
 abstract class ParrotContext {
-  const ParrotContext(ParrotContainer container);
-
-  /// Allows navigating through the modules tree, for example, to pull out a specific instance from the selected module.
+  /// Select a module from the current context node. And search from the
+  /// modules exported by the current module.
+  ///
+  /// If the module is not found, throw an error.
   ParrotContext select(Type module);
 
-  /// Retrieves an instance of either injectable, otherwise, throws exception.
-  T get<T>(Type typeOrToken);
+  /// Get a provider injected instance from the current context node.
+  ///
+  /// If the provider is not found, throw an error.
+  T get<T extends Object>(Type type);
 
-  /// Resolve an instance of either injectable, otherwise, throws exception.
-  T resolve<T>(Type typeOrToken);
+  /// Get an instance or module, and retrieve dependencies if they don't
+  /// exist in the current context.
+  T resolve<T extends Object>(Type type);
 }
