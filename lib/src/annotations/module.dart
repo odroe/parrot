@@ -16,6 +16,7 @@ class Module {
     this.dependencies = const [],
     this.providers = const [],
     this.exports = const [],
+    this.global = false,
   });
 
   /// The module registed service providers.
@@ -26,4 +27,7 @@ class Module {
 
   /// Exported providers and dependencies.
   final Iterable<Type> exports;
+
+  /// The module is global.
+  final bool global;
 }

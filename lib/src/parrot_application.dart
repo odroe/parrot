@@ -1,5 +1,5 @@
-import 'injector/module_compiler.dart';
-import 'injector/parrot_container.dart';
+import 'injector/module_context.dart';
+import 'parrot_container.dart';
 import 'parrot_context.dart';
 
 abstract class ParrotApplication implements ParrotContext {
@@ -13,22 +13,17 @@ class _ParrotApplicationImpl implements ParrotApplication {
   });
 
   factory _ParrotApplicationImpl(Type module) {
+    final ParrotContainer container = ParrotContainer();
     final _ParrotApplicationImpl app = _ParrotApplicationImpl._(
-      container: ParrotContainer(),
+      container: container,
       module: module,
     );
 
-    // Register the application in container.
-    app.container.register(ParrotApplication, app);
+    // Add the application to the container.
+    container[ParrotApplication] = app;
 
-    // Create a module compiler.
-    final ModuleCompiler compiler = ModuleCompiler(app.container);
-
-    // Register module compiler in container.
-    app.container.register(ModuleCompiler, compiler);
-
-    // Register module context in container.
-    app.container.register(module, compiler.compile(module));
+    // Compile the module.
+    ModuleContext.compile(container, module);
 
     return app;
   }
@@ -36,7 +31,7 @@ class _ParrotApplicationImpl implements ParrotApplication {
   final ParrotContainer container;
   final Type module;
 
-  ParrotContext get root => container.get<ParrotContext>(module);
+  ParrotContext get root => container[module]!;
 
   @override
   T get<T extends Object>(Type type) => root.get<T>(type);
