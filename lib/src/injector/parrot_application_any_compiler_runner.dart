@@ -38,8 +38,15 @@ mixin ParrotApplicationAnyCompilerRunner on ParrotApplicationBase
     });
 
     // Run the annotations.
-    for (final AnyCompiler annotation in annotations) {
-      await annotation.compile(this, mirror);
+    for (final AnyCompiler anyCompiler in annotations) {
+      for (final Type use in anyCompiler.uses) {
+        if (!annotations.map((e) => e.runtimeType).contains(use)) {
+          throw Exception(
+              'The annotation ${anyCompiler.runtimeType} depends on the annotation $use, but the annotation $use is not found.');
+        }
+      }
+
+      await anyCompiler.compile(this, mirror);
     }
   }
 }

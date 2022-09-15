@@ -1,6 +1,5 @@
 import 'dart:mirrors';
 
-import '../parrot_container.dart';
 import 'any_compiler_runner.dart';
 
 /// Any compiler.
