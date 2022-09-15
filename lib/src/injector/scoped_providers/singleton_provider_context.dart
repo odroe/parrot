@@ -1,12 +1,9 @@
 import '../provider_context.dart';
 
-abstract class SingletonProviderContext<T> extends ProviderContext<T> {
+class SingletonProviderContext<T extends Object> extends ProviderContext<T> {
   const SingletonProviderContext({
-    required super.module,
-    required this.instance,
-    super.scope,
+    required super.modules,
+    required super.type,
+    required super.value,
   });
-
-  /// The singleton instance.
-  final T instance;
 }

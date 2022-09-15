@@ -6,13 +6,16 @@ import 'any_compiler.dart';
 import 'any_compiler_runner.dart';
 import 'module_context.dart';
 
-mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler {
+mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler<ModuleContext> {
   @override
-  Future<void> compile(AnyCompilerRunner runner, Mirror mirror) async {
+  Iterable<Type> get uses => [];
+
+  @override
+  Future<ModuleContext> compile(AnyCompilerRunner runner, Mirror mirror) async {
     if (mirror is! ClassMirror) {
       throw Exception('@Module() annotation must be used on a class.');
     } else if (runner.container.has(mirror.reflectedType)) {
-      return;
+      return runner.container.get(mirror.reflectedType)!.value;
     }
 
     // Register the instance to container.
@@ -34,5 +37,7 @@ mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler {
 
       await runner.runAnyCompiler(dependency);
     }
+
+    return moduleContext;
   }
 }

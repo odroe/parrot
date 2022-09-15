@@ -63,10 +63,12 @@ mixin ParrotApplicationContext on ParrotApplicationBase
     container.set(InstanceToken(AnyCompilerRunner, runner));
 
     // Run the module compiler.
-    await runner.runAnyCompiler(module);
+    // final Iteawait runner.runAnyCompiler(module);
+    final Iterable results = await runner.runAnyCompiler(module);
 
     // Set current context module.
-    context = container.get(module)!.value;
+    context = results.firstWhere(
+        (element) => element is ModuleContext && element.module == module);
 
     return super.initialize();
   }

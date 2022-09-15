@@ -1,7 +1,6 @@
-import '../injector/any_compiler.dart';
 import '../injector/module_compiler.dart';
 
-abstract class ModuleAnnotation extends AnyCompiler {
+abstract class ModuleAnnotation {
   const ModuleAnnotation({
     this.dependencies = const [],
     this.providers = const [],

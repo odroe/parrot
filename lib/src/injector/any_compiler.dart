@@ -7,7 +7,6 @@ import 'any_compiler_runner.dart';
 /// This compiler is also used to compile custom annotations.
 ///
 /// Core annotations are compiled by this compiler, E.g:
-/// - [Inject]
 /// - [Injectable]
 /// - [Module]
 ///
@@ -15,7 +14,7 @@ import 'any_compiler_runner.dart';
 /// ```dart
 /// import 'package:parrot/parrot.dart';
 ///
-/// class Simple extends AnyCompiler {
+/// class Simple extends AnyCompiler<void> {
 ///   const SimpleCompiler();
 ///
 ///   @override
@@ -30,7 +29,7 @@ import 'any_compiler_runner.dart';
 /// @Simple()
 /// class MyClass {}
 /// ```
-abstract class AnyCompiler {
+abstract class AnyCompiler<T> {
   const AnyCompiler();
 
   /// Other annotations this annotation depends on. Annotations that need to
@@ -44,5 +43,5 @@ abstract class AnyCompiler {
   ///
   /// - [container]: The container is in current application.
   /// - [mirror]: The mirror of the annotated class.
-  Future<void> compile(AnyCompilerRunner runner, Mirror mirror);
+  Future<T> compile(AnyCompilerRunner runner, Mirror mirror);
 }

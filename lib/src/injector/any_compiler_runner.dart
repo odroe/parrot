@@ -7,7 +7,7 @@ abstract class AnyCompilerRunner {
   factory AnyCompilerRunner(ParrotContainer container) = _AnyCompilerRunnerImpl;
 
   /// Run all [AnyCompiler] compile annotations.
-  Future<void> runAnyCompiler(Type type);
+  Future<Iterable> runAnyCompiler(Type type);
 
   /// Current container.
   ParrotContainer get container;
@@ -20,7 +20,7 @@ class _AnyCompilerRunnerImpl implements AnyCompilerRunner {
   final ParrotContainer container;
 
   @override
-  Future<void> runAnyCompiler(Type type) async {
+  Future<Iterable> runAnyCompiler(Type type) async {
     final TypeMirror mirror = reflectType(type);
 
     // Get all [AnyCompiler] annotations from the [type].
@@ -36,6 +36,8 @@ class _AnyCompilerRunnerImpl implements AnyCompilerRunner {
       return 0;
     });
 
+    final List results = [];
+
     // Run the annotations.
     for (final AnyCompiler anyCompiler in annotations) {
       for (final Type use in anyCompiler.uses) {
@@ -45,7 +47,9 @@ class _AnyCompilerRunnerImpl implements AnyCompilerRunner {
         }
       }
 
-      await anyCompiler.compile(this, mirror);
+      results.add(await anyCompiler.compile(this, mirror));
     }
+
+    return results;
   }
 }

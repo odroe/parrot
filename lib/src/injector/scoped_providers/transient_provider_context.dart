@@ -1,13 +1,12 @@
+import 'dart:async';
+
 import '../provider_context.dart';
 import '../provider_creator.dart';
 
-abstract class TransientProviderContext<T> extends ProviderContext<T> {
+class TransientProviderContext<T> extends ProviderContext<ProviderCreator<T>> {
   const TransientProviderContext({
-    required this.creator,
-    required super.module,
-    super.scope,
+    required super.modules,
+    required super.type,
+    required super.value,
   });
-
-  /// The provider instance creator.
-  final ProviderCreator creator;
 }
