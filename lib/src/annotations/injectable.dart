@@ -1,4 +1,19 @@
+import '../injector/provider_compiler.dart';
 import '../injector/scope.dart';
+
+abstract class InjectableAnnotation {
+  const InjectableAnnotation({
+    this.scope = Scope.singleton,
+    this.factory,
+  });
+
+  /// The scope of the service.
+  /// Default is [Scope.singleton].
+  final Scope scope;
+
+  /// The factory method name.
+  final String? factory;
+}
 
 /// Injectable annotation.
 ///
@@ -26,19 +41,7 @@ import '../injector/scope.dart';
 ///  factory UserService.create() => UserService._();
 /// }
 /// ```
-class Injectable {
-  const Injectable({
-    this.scope = Scope.singleton,
-    this.factory,
-  });
-
-  /// The scope of the service.
-  /// Default is [Scope.singleton].
-  final Scope scope;
-
-  /// The factory method name.
-  final String? factory;
-}
+class Injectable = InjectableAnnotation with ProviderCompiler;
 
 /// Inject annotation.
 ///

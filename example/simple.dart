@@ -1,11 +1,4 @@
-import 'dart:mirrors';
-
 import 'package:parrot/parrot.dart';
-import 'package:parrot/src/injector/any_compiler.dart';
-import 'package:parrot/src/injector/any_compiler_runner.dart';
-
-@Module(dependencies: [SimpleModule])
-class UserModule {}
 
 @Injectable()
 class SimpleService {
@@ -15,7 +8,6 @@ class SimpleService {
 }
 
 @Module(
-  dependencies: [UserModule],
   providers: [SimpleService],
 )
 class SimpleModule {}
@@ -23,20 +15,7 @@ class SimpleModule {}
 @Module(
   dependencies: [SimpleModule],
 )
-@Demo()
 class AppModule {}
-
-class Demo implements AnyCompiler {
-  const Demo();
-
-  @override
-  Iterable<Type> get uses => [Module];
-
-  @override
-  Future<void> compile(AnyCompilerRunner runner, Mirror mirror) async {
-    print(mirror is ClassMirror);
-  }
-}
 
 void main() async {
   final app = ParrotApplication(AppModule);
@@ -45,7 +24,6 @@ void main() async {
 
   // print(app.container.all);
 
-  print(app.select(UserModule).module);
   // final SimpleService service = app.resolve(SimpleService);
 
   // service.say(); // Hello, 🦜 Parrot!

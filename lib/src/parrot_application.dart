@@ -60,7 +60,7 @@ mixin ParrotApplicationContext on ParrotApplicationBase
     final AnyCompilerRunner runner = AnyCompilerRunner(container);
 
     // Register any compiler runner to container.
-    container.set(InstanceToken(AnyCompilerRunner, runner));
+    container.set(ParrotToken(AnyCompilerRunner, runner));
 
     // Run the module compiler.
     // final Iteawait runner.runAnyCompiler(module);
@@ -78,6 +78,6 @@ mixin ParrotApplicationContext on ParrotApplicationBase
 class ParrotApplication extends ParrotApplicationBase
     with ParrotApplicationContext {
   ParrotApplication(super.module, {super.container}) {
-    container.set(InstanceToken(ParrotApplication, this));
+    container.set(ParrotToken(ParrotApplication, this));
   }
 }

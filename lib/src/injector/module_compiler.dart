@@ -27,7 +27,7 @@ mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler<ModuleContext> {
       providers: providers,
     );
     final ModuleContextToken instanceToken =
-        InstanceToken<ModuleContext>(mirror.reflectedType, moduleContext);
+        ParrotToken<ModuleContext>(mirror.reflectedType, moduleContext);
 
     runner.container.set<ModuleContext>(instanceToken);
 
@@ -36,6 +36,11 @@ mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler<ModuleContext> {
       if (dependency == mirror.reflectedType) continue;
 
       await runner.runAnyCompiler(dependency);
+    }
+
+    // Compile the module providers.
+    for (final Type provider in providers) {
+      await runner.runAnyCompiler(provider);
     }
 
     return moduleContext;

@@ -4,7 +4,7 @@ import '../container/parrot_token.dart';
 import '../exceptions/module_not_found_exception.dart';
 import '../parrot_context.dart';
 
-typedef ModuleContextToken = InstanceToken<ModuleContext>;
+typedef ModuleContextToken = ParrotToken<ModuleContext>;
 
 class ModuleContext extends Module implements ParrotContext {
   const ModuleContext({
