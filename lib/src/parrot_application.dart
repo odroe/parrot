@@ -1,5 +1,3 @@
-import 'package:meta/meta.dart';
-
 import 'container/parrot_container.dart';
 import 'container/parrot_token.dart';
 import 'injector/any_compiler_runner.dart';
@@ -28,21 +26,11 @@ abstract class ParrotApplicationBase implements ParrotContext {
   bool _initialized = false;
 
   /// Initialize the application.
-  @mustCallSuper
   Future<void> initialize() async {
     // If the application has been initialized, throw an error.
     if (initialized) {
       throw Exception('The Parrot application has been initialized.');
     }
-
-    // Create any compiler runner.
-    final AnyCompilerRunner runner = AnyCompilerRunner(container);
-
-    // Register any compiler runner to container.
-    container.set(InstanceToken(AnyCompilerRunner, runner));
-
-    // Run the module compiler.
-    await runner.runAnyCompiler(module);
 
     // Set initialized to true.
     _initialized = true;
@@ -55,7 +43,6 @@ abstract class ParrotApplicationBase implements ParrotContext {
 mixin ParrotApplicationContext on ParrotApplicationBase
     implements ParrotContext {
   /// Current context module.
-  @internal
   late final ModuleContext context;
 
   @override
@@ -66,6 +53,23 @@ mixin ParrotApplicationContext on ParrotApplicationBase
 
   @override
   ModuleContext select(Type module) => context.select(module);
+
+  @override
+  Future<void> initialize() async {
+    // Create any compiler runner.
+    final AnyCompilerRunner runner = AnyCompilerRunner(container);
+
+    // Register any compiler runner to container.
+    container.set(InstanceToken(AnyCompilerRunner, runner));
+
+    // Run the module compiler.
+    await runner.runAnyCompiler(module);
+
+    // Set current context module.
+    context = container.get(module)!.value;
+
+    return super.initialize();
+  }
 }
 
 /// 🦜 Parrot application.

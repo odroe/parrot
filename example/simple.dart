@@ -23,6 +23,7 @@ class SimpleModule {}
 @Module(
   dependencies: [SimpleModule],
 )
+@Demo()
 class AppModule {}
 
 class Demo implements AnyCompiler {
@@ -32,7 +33,9 @@ class Demo implements AnyCompiler {
   Iterable<Type> get uses => [Module];
 
   @override
-  Future<void> compile(AnyCompilerRunner runner, Mirror mirror) async {}
+  Future<void> compile(AnyCompilerRunner runner, Mirror mirror) async {
+    print(mirror is ClassMirror);
+  }
 }
 
 void main() async {
@@ -40,9 +43,9 @@ void main() async {
 
   await app.initialize();
 
-  print(app.container.all);
+  // print(app.container.all);
 
-  // print(app.select(UserModule).module);
+  print(app.select(UserModule).module);
   // final SimpleService service = app.resolve(SimpleService);
 
   // service.say(); // Hello, 🦜 Parrot!
