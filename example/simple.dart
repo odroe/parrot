@@ -20,7 +20,9 @@ class SimpleService {
 )
 class SimpleModule {}
 
-@Demo()
+@Module(
+  dependencies: [SimpleModule],
+)
 class AppModule {}
 
 class Demo implements AnyCompiler {
@@ -38,7 +40,7 @@ void main() async {
 
   await app.initialize();
 
-  print(app.container.keys);
+  print(app.container.all);
 
   // print(app.select(UserModule).module);
   // final SimpleService service = app.resolve(SimpleService);

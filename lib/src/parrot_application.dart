@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
 
+import 'container/parrot_container.dart';
+import 'container/parrot_token.dart';
+import 'injector/any_compiler_runner.dart';
 import 'injector/module_context.dart';
-import 'injector/parrot_application_any_compiler_runner.dart';
-import 'parrot_container.dart';
 import 'parrot_context.dart';
 
 /// 🦜 Parrot application base class.
@@ -34,8 +35,14 @@ abstract class ParrotApplicationBase implements ParrotContext {
       throw Exception('The Parrot application has been initialized.');
     }
 
-    // Register the application to container.
-    container.putIfAbsent(ParrotApplication, () => this);
+    // Create any compiler runner.
+    final AnyCompilerRunner runner = AnyCompilerRunner(container);
+
+    // Register any compiler runner to container.
+    container.set(InstanceToken(AnyCompilerRunner, runner));
+
+    // Run the module compiler.
+    await runner.runAnyCompiler(module);
 
     // Set initialized to true.
     _initialized = true;
@@ -61,48 +68,10 @@ mixin ParrotApplicationContext on ParrotApplicationBase
   ModuleContext select(Type module) => context.select(module);
 }
 
-class ParrotApplication = ParrotApplicationBase
-    with ParrotApplicationContext, ParrotApplicationAnyCompilerRunner;
-
-// class _ParrotApplicationImpl
-//     with AnyCompilerRunner
-//     implements ParrotApplication {
-//   _ParrotApplicationImpl._({
-//     required this.container,
-//     required this.module,
-//   });
-
-//   factory _ParrotApplicationImpl(
-//     Type module, {
-//     ParrotContainer? container,
-//   }) {
-//     final ParrotContainer resolvedContainer = container ?? ParrotContainer();
-//     final _ParrotApplicationImpl app = _ParrotApplicationImpl._(
-//       container: resolvedContainer,
-//       module: module,
-//     );
-
-//     // Add the application to the container.
-//     resolvedContainer[ParrotApplication] = app;
-
-//     return app;
-//   }
-
-//   @override
-//   final ParrotContainer container;
-
-//   /// The application root module.
-//   final Type module;
-
-//   /// Get the root module context.
-//   ParrotContext get root => container[module]!;
-
-//   @override
-//   T get<T extends Object>(Type type) => root.get<T>(type);
-
-//   @override
-//   ModuleContext select(Type module) => root.select(module);
-
-//   @override
-//   T resolve<T extends Object>(Type type) => root.resolve<T>(type);
-// }
+/// 🦜 Parrot application.
+class ParrotApplication extends ParrotApplicationBase
+    with ParrotApplicationContext {
+  ParrotApplication(super.module, {super.container}) {
+    container.set(InstanceToken(ParrotApplication, this));
+  }
+}

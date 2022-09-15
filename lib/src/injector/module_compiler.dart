@@ -1,6 +1,7 @@
 import 'dart:mirrors';
 
 import '../annotations/module.dart';
+import '../container/parrot_token.dart';
 import 'any_compiler.dart';
 import 'any_compiler_runner.dart';
 import 'module_context.dart';
@@ -10,18 +11,22 @@ mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler {
   Future<void> compile(AnyCompilerRunner runner, Mirror mirror) async {
     if (mirror is! ClassMirror) {
       throw Exception('@Module() annotation must be used on a class.');
-    } else if (runner.container.containsKey(mirror.reflectedType)) {
+    } else if (runner.container.has(mirror.reflectedType)) {
       return;
     }
 
     // Register the instance to container.
-    runner.container[mirror.reflectedType] = ModuleContext(
+    final ModuleContext moduleContext = ModuleContext(
       container: runner.container,
       module: mirror.reflectedType,
       dependencies: dependencies,
       exports: exports,
       providers: providers,
     );
+    final ModuleContextToken instanceToken =
+        InstanceToken<ModuleContext>(mirror.reflectedType, moduleContext);
+
+    runner.container.set<ModuleContext>(instanceToken);
 
     // Compile the module dependencies.
     for (final Type dependency in dependencies) {
@@ -29,7 +34,5 @@ mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler {
 
       await runner.runAnyCompiler(dependency);
     }
-
-    // TODO: Compile the module providers.
   }
 }

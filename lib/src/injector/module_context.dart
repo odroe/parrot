@@ -1,8 +1,10 @@
 import '../annotations/module.dart';
+import '../container/parrot_container.dart';
+import '../container/parrot_token.dart';
 import '../exceptions/module_not_found_exception.dart';
-import '../exceptions/instance_not_found_exception.dart';
 import '../parrot_context.dart';
-import '../parrot_container.dart';
+
+typedef ModuleContextToken = InstanceToken<ModuleContext>;
 
 class ModuleContext extends Module implements ParrotContext {
   const ModuleContext({
@@ -32,14 +34,11 @@ class ModuleContext extends Module implements ParrotContext {
   ModuleContext select(Type module) {
     if (module == this.module) return this;
 
-    try {
-      // Get the module context from container.
-      final ModuleContext context = _container[module] as ModuleContext;
-
-      // If the module context is not current exports, throw an error.
-      if (context.global || hasModuleDependency(module)) return context;
-    } on InstanceNotFoundException {
-      throw ModuleNotFoundException(module);
+    final ParrotToken? token = _container.get(module);
+    if (token != null && token is ModuleContextToken) {
+      if (token.value.global || hasModuleDependency(module)) {
+        return token.value;
+      }
     }
 
     throw ModuleNotFoundException(module);
@@ -51,11 +50,10 @@ class ModuleContext extends Module implements ParrotContext {
       // If the module is in dependencies, return true.
       if (dependency == module) return true;
 
-      try {
-        final ModuleContext context = _container[dependency] as ModuleContext;
-        if (context.hasModuleDependency(module)) return true;
-      } catch (e) {
-        continue;
+      final ParrotToken? token = _container.get(dependency);
+      if (token != null && token is ModuleContextToken) {
+        // If the module is in dependencies, return true.
+        if (token.value.hasModuleDependency(module)) return true;
       }
     }
 

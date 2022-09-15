@@ -1,6 +1,6 @@
 import '../annotations/injectable.dart';
+import '../container/parrot_container.dart';
 import '../exceptions/provider_context_unsupported_exception.dart';
-import '../parrot_container.dart';
 import '../parrot_context.dart';
 import 'module_context.dart';
 
