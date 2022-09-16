@@ -1,24 +1,25 @@
 import '../annotations/module.dart';
-import '../container/parrot_container.dart';
-import '../container/parrot_token.dart';
-import '../exceptions/module_not_found_exception.dart';
 import '../parrot_context.dart';
+import 'parrot_container.dart';
 
-typedef ModuleContextToken = ParrotToken<ModuleContext>;
+class ModuleContext implements ParrotContext {
+  ModuleContext({
+    required this.container,
+    required this.type,
+    required this.annotation,
+  });
 
-class ModuleContext extends Module implements ParrotContext {
-  const ModuleContext({
-    required ParrotContainer container,
-    required this.module,
-    required super.dependencies,
-    required super.providers,
-    required super.exports,
-  }) : _container = container;
+  /// Current module annotation instance.
+  final Module annotation;
 
-  final ParrotContainer _container;
+  /// Parrot container.
+  final ParrotContainer container;
 
   /// Current context module.
-  final Type module;
+  final Type type;
+
+  /// Metadata for other annotations of the module.
+  final List<dynamic> metadata = [];
 
   @override
   T get<T extends Object>(Type type) {
@@ -32,31 +33,27 @@ class ModuleContext extends Module implements ParrotContext {
 
   @override
   ModuleContext select(Type module) {
-    if (module == this.module) return this;
+    // If module is the same as the current module, return the current context.
+    if (module == type) return this;
 
-    final ParrotToken? token = _container.get(module);
-    if (token != null && token is ModuleContextToken) {
-      if (token.value.global || hasModuleDependency(module)) {
-        return token.value;
+    // Find the module in dependencies.
+    for (final Type dependency in annotation.dependencies) {
+      try {
+        return container.get<ModuleContext>(dependency).select(module);
+      } catch (e) {
+        continue;
       }
     }
 
-    throw ModuleNotFoundException(module);
-  }
+    // Try find global modules.
+    try {
+      final ModuleContext context = container.get(module);
 
-  /// Has a module in dependencies.
-  bool hasModuleDependency(Type module) {
-    for (final Type dependency in dependencies) {
-      // If the module is in dependencies, return true.
-      if (dependency == module) return true;
-
-      final ParrotToken? token = _container.get(dependency);
-      if (token != null && token is ModuleContextToken) {
-        // If the module is in dependencies, return true.
-        if (token.value.hasModuleDependency(module)) return true;
-      }
+      if (context.type == module && context.annotation.global) return context;
+    } catch (e) {
+      throw Exception('The module $module is not found.');
     }
 
-    return false;
+    throw Exception('The module $module is not found.');
   }
 }

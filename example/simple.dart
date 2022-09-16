@@ -18,9 +18,9 @@ class SimpleModule {}
 class AppModule {}
 
 void main() async {
-  final app = ParrotApplication(AppModule);
+  final app = await ParrotApplication.create(AppModule);
 
-  await app.initialize();
+  print(app.select(SimpleModule).type);
 
   // print(app.container.all);
 

@@ -1,48 +1,50 @@
 import 'dart:mirrors';
 
 import '../annotations/module.dart';
-import '../container/parrot_token.dart';
-import 'any_compiler.dart';
-import 'any_compiler_runner.dart';
 import 'module_context.dart';
+import 'parrot_container.dart';
 
-mixin ModuleCompiler on ModuleAnnotation implements AnyCompiler<ModuleContext> {
-  @override
-  Iterable<Type> get uses => [];
+/// Module compiler.
+class ModuleCompiler {
+  const ModuleCompiler(this.container);
 
-  @override
-  Future<ModuleContext> compile(AnyCompilerRunner runner, Mirror mirror) async {
-    if (mirror is! ClassMirror) {
-      throw Exception('@Module() annotation must be used on a class.');
-    } else if (runner.container.has(mirror.reflectedType)) {
-      return runner.container.get(mirror.reflectedType)!.value;
+  /// Parrot container.
+  final ParrotContainer container;
+
+  /// Compile module to module context.
+  Future<ModuleContext> compile(Type module) async {
+    final ClassMirror classMirror = reflectClass(module);
+
+    // Check whether the metadata of the [classMirror] contains only one '@Module()', and no or more than one error is thrown.
+    final List<Module> moduleAnnotations = classMirror.metadata
+        .whereType<InstanceMirror>()
+        .map((InstanceMirror instanceMirror) => instanceMirror.reflectee)
+        .whereType<Module>()
+        .toList();
+    if (moduleAnnotations.length != 1) {
+      throw StateError(
+          'The module $module must have only one `@Module()` annotation.');
     }
 
-    // Register the instance to container.
-    final ModuleContext moduleContext = ModuleContext(
-      container: runner.container,
-      module: mirror.reflectedType,
-      dependencies: dependencies,
-      exports: exports,
-      providers: providers,
+    // If the context of the current module exists in the container, return it.
+    if (container.has(module)) {
+      return container.get(module);
+    }
+
+    // Create a new module context.
+    final ModuleContext context = ModuleContext(
+      container: container,
+      type: module,
+      annotation: moduleAnnotations.first,
     );
-    final ModuleContextToken instanceToken =
-        ParrotToken<ModuleContext>(mirror.reflectedType, moduleContext);
+    container.registerSingleton(context, module);
 
-    runner.container.set<ModuleContext>(instanceToken);
-
-    // Compile the module dependencies.
-    for (final Type dependency in dependencies) {
-      if (dependency == mirror.reflectedType) continue;
-
-      await runner.runAnyCompiler(dependency);
+    // Compile dependencies modules.
+    for (final Type dependency in context.annotation.dependencies) {
+      await compile(dependency);
     }
 
-    // Compile the module providers.
-    for (final Type provider in providers) {
-      await runner.runAnyCompiler(provider);
-    }
-
-    return moduleContext;
+    // Return the module context.
+    return context;
   }
 }

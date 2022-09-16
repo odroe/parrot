@@ -1,7 +1,7 @@
-import '../injector/module_compiler.dart';
+// import '../injector/module_compiler.dart';
 
-abstract class ModuleAnnotation {
-  const ModuleAnnotation({
+class Module {
+  const Module({
     this.dependencies = const [],
     this.providers = const [],
     this.exports = const [],
@@ -34,4 +34,4 @@ abstract class ModuleAnnotation {
 ///
 /// final app = ParrotApplication(AppModule);
 /// ```
-class Module = ModuleAnnotation with ModuleCompiler;
+// class Module = ModuleAnnotation with ModuleCompiler;
