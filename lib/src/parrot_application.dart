@@ -2,6 +2,7 @@ import 'container/parrot_container.dart';
 import 'container/parrot_token.dart';
 import 'injector/module_compiler.dart';
 import 'injector/module_context.dart';
+import 'injector/provider_compiler.dart';
 import 'parrot_context.dart';
 import 'utils/typed_symbol.dart';
 
@@ -37,6 +38,9 @@ class ParrotApplication implements ParrotContext {
       TypedSymbol.create(ParrotApplication),
       app,
     ));
+
+    // Compile all providers.
+    await ProviderCompiler(container).compile();
 
     return app;
   }

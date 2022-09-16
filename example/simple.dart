@@ -1,14 +1,22 @@
 import 'package:parrot/parrot.dart';
 
 @Injectable()
+class A {}
+
+@Injectable()
 class SimpleService {
+  const SimpleService(this.a);
+
+  final A a;
+
   void say() {
     print('Hello, 🦜 Parrot!');
   }
 }
 
 @Module(
-  providers: [SimpleService],
+  dependencies: [AppModule],
+  providers: [SimpleService, A],
 )
 class SimpleModule {}
 

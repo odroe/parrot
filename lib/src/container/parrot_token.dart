@@ -30,5 +30,5 @@ class TransientToken<T> extends ParrotToken<T> {
   final Future<T> Function() factory;
 
   @override
-  Future<T> resolve() async => factory();
+  Future<T> resolve() => factory();
 }

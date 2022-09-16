@@ -29,7 +29,7 @@ import '../injector/scope.dart';
 class Injectable {
   const Injectable({
     this.scope = Scope.singleton,
-    this.factory,
+    this.factory = Symbol.empty,
   });
 
   /// The scope of the service.
@@ -37,7 +37,7 @@ class Injectable {
   final Scope scope;
 
   /// The factory method name.
-  final String? factory;
+  final Symbol factory;
 }
 
 /// Inject annotation.

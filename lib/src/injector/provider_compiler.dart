@@ -1,85 +1,126 @@
-// import 'dart:mirrors';
+import 'dart:mirrors';
 
-// class ProviderC
+import 'package:parrot/src/injector/module_context.dart';
 
-// import '../annotations/injectable.dart';
-// import 'any_compiler.dart';
-// import 'any_compiler_runner.dart';
-// import 'provider_context.dart';
-// import 'scope.dart';
-// import 'scoped_providers/request_provider_context.dart';
-// import 'scoped_providers/singleton_provider_context.dart';
-// import 'scoped_providers/transient_provider_context.dart';
+import '../annotations/injectable.dart';
+import '../container/parrot_container.dart';
+import '../container/parrot_token.dart';
+import '../utils/typed_symbol.dart';
+import 'provider_context.dart';
+import 'scope.dart';
 
-// mixin ProviderCompiler on InjectableAnnotation
-//     implements AnyCompiler<ProviderContext> {
-//   @override
-//   Iterable<Type> get uses => const <Type>[];
+class ProviderCompiler {
+  const ProviderCompiler(this.container);
 
-//   @override
-//   Future<ProviderContext> compile(
-//       AnyCompilerRunner runner, Mirror mirror) async {
-//     // If the mirror not a class mirror, throw an error.
-//     if (mirror is! ClassMirror) {
-//       throw Exception(
-//           'The `@Injectable()` annotation can only be used on a class.');
-//     }
+  final ParrotContainer container;
 
-//     // If the mirror find in contianer, return the context.
-//     if (runner.container.has(mirror.reflectedType)) {
-//       return runner.container.get(mirror.reflectedType)!.value;
-//     }
+  /// Compile all providers.
+  Future<void> compile() async {
+    final Iterator<ParrotToken<ModuleContext>> iterator =
+        container.whereType<ParrotToken<ModuleContext>>().iterator;
 
-//     // Create a new context.
-//     final ProviderContext context = createContext(mirror);
+    while (iterator.moveNext()) {
+      final ModuleContext module = await iterator.current.resolve();
 
-//     // Add the context to the container.
-//     runner.container.set(ParrotToken(mirror.reflectedType, context));
+      for (final Type provider in module.annotation.providers) {
+        await compileProvider(module, provider);
+      }
+    }
+  }
 
-//     return context;
-//   }
+  /// Compile a provider.
+  Future<ProviderContext> compileProvider(
+      ModuleContext module, Type provider) async {
+    final ClassMirror classMirror = reflectClass(provider);
 
-//   /// Create a new [ProviderContext] instance.
-//   ProviderContext createContext(ClassMirror mirror) {
-//     switch (scope) {
-//       case Scope.request:
-//         return createRequestScopeContext(mirror);
-//       case Scope.transient:
-//         return createTransientScopeContext(mirror);
-//       case Scope.singleton:
-//         return createSingletonScopeContext(mirror);
-//     }
-//   }
+    // Get the provider all injectable annotations.
+    final List<Injectable> annotations = classMirror.metadata
+        .where((InstanceMirror instance) => instance.reflectee is Injectable)
+        .map<Injectable>((InstanceMirror instance) => instance.reflectee)
+        .toList();
 
-//   /// Create a new [RequestProviderContext] instance.
-//   RequestProviderContext createRequestScopeContext(ClassMirror mirror) {
-//     final TransientProviderContext context =
-//         createTransientScopeContext(mirror);
+    // If annotations is not equal to 1, throw an error.
+    if (annotations.length != 1) {
+      throw Exception(
+          'The provider $provider must have exactly one `@Injectable()` annotation.');
+    }
 
-//     return RequestProviderContext(
-//       modules: context.modules,
-//       type: mirror.reflectedType,
-//       value: context.value,
-//     );
-//   }
+    // Create the provider symbol.
+    final Symbol symbol = TypedSymbol.create(provider);
 
-//   /// Create a new [TransientProviderContext] instance.
-//   TransientProviderContext createTransientScopeContext(ClassMirror mirror) {
-//     throw UnimplementedError();
-//   }
+    // If the provider is compiled return it.
+    if (container.has(symbol)) {
+      return container.get(symbol) as ProviderContext;
+    }
 
-//   /// Create singleton scope context.
-//   SingletonProviderContext createSingletonScopeContext(ClassMirror mirror) {
-//     final Symbol factorySymbol = findFactorySymbol(mirror);
+    // Create the provider context.
+    final ProviderContext context =
+        await createProviderContext(module, classMirror, annotations.first);
 
-//     print(factorySymbol);
-//     throw UnimplementedError();
-//   }
+    // Add the provider context to the container.
+    container.register(context);
 
-//   /// Find the factory symbol.
-//   Symbol findFactorySymbol(ClassMirror mirror) {
-//     return Symbol(factory ?? mirror.reflectedType.toString());
-//     // mirror.qualifiedName
-//     // final String name = factory ?? mirror.reflectedType.;
-//   }
-// }
+    return context;
+  }
+
+  /// Create a provider context.
+  Future<ProviderContext> createProviderContext(ModuleContext module,
+      ClassMirror classMirror, Injectable annotation) async {
+    final TransientProviderContext context =
+        await createTransientProviderContext(
+            module, classMirror, annotation.factory);
+
+    // If the provider is a singleton, create a singleton provider context.
+    if (annotation.scope == Scope.singleton) {
+      return SingletonProviderContext(
+        modules: context.modules,
+        provider: context.provider,
+        instance: await context.resolve(),
+      );
+    }
+
+    return context;
+  }
+
+  /// Create a [TransientProviderContext].
+  Future<TransientProviderContext> createTransientProviderContext(
+    ModuleContext module,
+    ClassMirror classMirror,
+    Symbol factory,
+  ) async {
+    final MethodMirror factoryMirror =
+        findFactoryMethodMirror(classMirror, factory);
+
+    print(factoryMirror.parameters.first.type);
+
+    // classMirror.newInstance(factoryMirror.constructorName, positionalArguments)
+    throw UnimplementedError();
+  }
+
+  /// Find the factory method mirror.
+  MethodMirror findFactoryMethodMirror(
+      ClassMirror classMirror, Symbol factory) {
+    final Symbol symbol = factory == Symbol.empty
+        ? Symbol(classMirror.reflectedType.toString())
+        : factory;
+
+    final DeclarationMirror? declarationMirror =
+        classMirror.declarations[symbol];
+    if (declarationMirror != null && declarationMirror is MethodMirror) {
+      // If the factory not is a constructor, throw an error.
+      if (declarationMirror.isConstConstructor ||
+          declarationMirror.isConstructor ||
+          declarationMirror.isFactoryConstructor ||
+          declarationMirror.isGenerativeConstructor ||
+          declarationMirror.isRedirectingConstructor) {
+        return declarationMirror;
+      }
+
+      throw Exception(
+          'The factory method $symbol must be a constructor of the provider ${classMirror.reflectedType}.');
+    }
+
+    throw Exception(
+        'The factory method $symbol does not exist in the class ${classMirror.reflectedType}.');
+  }
+}
