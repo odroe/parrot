@@ -1,7 +1,9 @@
+import 'container/parrot_container.dart';
+import 'container/parrot_token.dart';
 import 'injector/module_compiler.dart';
 import 'injector/module_context.dart';
-import 'injector/parrot_container.dart';
 import 'parrot_context.dart';
+import 'utils/typed_symbol.dart';
 
 class ParrotApplication implements ParrotContext {
   const ParrotApplication({
@@ -12,13 +14,13 @@ class ParrotApplication implements ParrotContext {
   final ModuleContext context;
 
   @override
-  T get<T extends Object>(Type type) => context.get<T>(type);
+  Future<T> get<T extends Object>(Type type) => context.get<T>(type);
 
   @override
-  T resolve<T extends Object>(Type type) => context.resolve<T>(type);
+  Future<T> resolve<T extends Object>(Type type) => context.resolve<T>(type);
 
   @override
-  ModuleContext select(Type module) => context.select(module);
+  Future<ModuleContext> select(Type module) => context.select(module);
 
   /// Create a new [ParrotApplication] instance.
   static Future<ParrotApplication> create(Type module) async {
@@ -30,6 +32,12 @@ class ParrotApplication implements ParrotContext {
         await ModuleCompiler(container).compile(module);
 
     // Create and returns a new parrot application.
-    return ParrotApplication(context: context);
+    final ParrotApplication app = ParrotApplication(context: context);
+    container.register(SingletonToken<ParrotApplication>(
+      TypedSymbol.create(ParrotApplication),
+      app,
+    ));
+
+    return app;
   }
 }

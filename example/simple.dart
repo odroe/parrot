@@ -19,8 +19,9 @@ class AppModule {}
 
 void main() async {
   final app = await ParrotApplication.create(AppModule);
+  final module = await app.select(AppModule);
 
-  print(app.select(SimpleModule).type);
+  print(module.metadata);
 
   // print(app.container.all);
 

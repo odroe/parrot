@@ -1,8 +1,10 @@
 import 'dart:mirrors';
 
 import '../annotations/module.dart';
+import '../container/parrot_container.dart';
+import '../container/parrot_token.dart';
+import '../utils/typed_symbol.dart';
 import 'module_context.dart';
-import 'parrot_container.dart';
 
 /// Module compiler.
 class ModuleCompiler {
@@ -26,9 +28,12 @@ class ModuleCompiler {
           'The module $module must have only one `@Module()` annotation.');
     }
 
+    // Create the module symbol.
+    final Symbol moduleSymbol = TypedSymbol.create(module);
+
     // If the context of the current module exists in the container, return it.
-    if (container.has(module)) {
-      return container.get(module);
+    if (container.has(moduleSymbol)) {
+      return container.get<ModuleContext>(moduleSymbol).resolve();
     }
 
     // Create a new module context.
@@ -37,11 +42,11 @@ class ModuleCompiler {
       type: module,
       annotation: moduleAnnotations.first,
     );
-    container.registerSingleton(context, module);
+    container.register(SingletonToken(moduleSymbol, context));
 
     // Compile dependencies modules.
     for (final Type dependency in context.annotation.dependencies) {
-      await compile(dependency);
+      context.metadata.add(await compile(dependency));
     }
 
     // Return the module context.

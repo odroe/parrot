@@ -1,6 +1,7 @@
 import '../annotations/module.dart';
+import '../container/parrot_container.dart';
 import '../parrot_context.dart';
-import 'parrot_container.dart';
+import '../utils/typed_symbol.dart';
 
 class ModuleContext implements ParrotContext {
   ModuleContext({
@@ -19,41 +20,42 @@ class ModuleContext implements ParrotContext {
   final Type type;
 
   /// Metadata for other annotations of the module.
-  final List<dynamic> metadata = [];
+  final List<ParrotContext> metadata = [];
 
   @override
-  T get<T extends Object>(Type type) {
+  Future<T> get<T extends Object>(Type type) {
     throw UnimplementedError();
   }
 
   @override
-  T resolve<T extends Object>(Type type) {
+  Future<T> resolve<T extends Object>(Type type) {
     throw UnimplementedError();
   }
 
   @override
-  ModuleContext select(Type module) {
+  Future<ModuleContext> select(Type module) async {
     // If module is the same as the current module, return the current context.
     if (module == type) return this;
 
     // Find the module in dependencies.
     for (final Type dependency in annotation.dependencies) {
       try {
-        return container.get<ModuleContext>(dependency).select(module);
+        final ModuleContext context = await container
+            .get<ModuleContext>(TypedSymbol.create(dependency))
+            .resolve();
+
+        // If the module is found, return the context.
+        return context.select(module);
       } catch (e) {
+        // Ignore the error.
         continue;
       }
     }
 
-    // Try find global modules.
-    try {
-      final ModuleContext context = container.get(module);
-
-      if (context.type == module && context.annotation.global) return context;
-    } catch (e) {
-      throw Exception('The module $module is not found.');
-    }
-
-    throw Exception('The module $module is not found.');
+    return container
+        .get<ModuleContext>(TypedSymbol.create(module))
+        .resolve()
+        .onError((error, stackTrace) =>
+            throw Exception('The module $module is not found.'));
   }
 }
