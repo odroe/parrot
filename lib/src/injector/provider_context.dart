@@ -1,25 +1,26 @@
 import '../container/parrot_token.dart';
 import '../utils/typed_symbol.dart';
 
-abstract class ProviderContext<T> extends ParrotToken<T> {
+abstract class ProviderContext<T extends Object> extends ParrotToken<T> {
   ProviderContext({
     required this.modules,
-    required this.provider,
-  }) : super(TypedSymbol.create(provider));
+    required this.type,
+  }) : super(TypedSymbol.create(type));
 
   /// Modules described by the current provider.
   final List<Type> modules;
 
   /// The provider type
-  final Type provider;
+  @override
+  final Type type;
 }
 
 /// Instance provider context.
-class SingletonProviderContext<T> extends ProviderContext<T>
+class SingletonProviderContext<T extends Object> extends ProviderContext<T>
     implements SingletonToken<T> {
   SingletonProviderContext({
     required super.modules,
-    required super.provider,
+    required super.type,
     required this.instance,
   });
 
@@ -32,11 +33,11 @@ class SingletonProviderContext<T> extends ProviderContext<T>
 }
 
 /// Transient provider context.
-class TransientProviderContext<T> extends ProviderContext<T>
+class TransientProviderContext<T extends Object> extends ProviderContext<T>
     implements TransientToken<T> {
   TransientProviderContext({
     required super.modules,
-    required super.provider,
+    required super.type,
     required this.factory,
   });
 

@@ -1,14 +1,7 @@
 import 'package:parrot/parrot.dart';
 
 @Injectable()
-class A {}
-
-@Injectable()
 class SimpleService {
-  const SimpleService(this.a);
-
-  final A a;
-
   void say() {
     print('Hello, 🦜 Parrot!');
   }
@@ -16,7 +9,7 @@ class SimpleService {
 
 @Module(
   dependencies: [AppModule],
-  providers: [SimpleService, A],
+  providers: [SimpleService],
 )
 class SimpleModule {}
 
@@ -27,13 +20,8 @@ class AppModule {}
 
 void main() async {
   final app = await ParrotApplication.create(AppModule);
-  final module = await app.select(AppModule);
+  final module = await app.select(SimpleModule);
+  final service = await module.get<SimpleService>(SimpleService);
 
-  print(module.metadata);
-
-  // print(app.container.all);
-
-  // final SimpleService service = app.resolve(SimpleService);
-
-  // service.say(); // Hello, 🦜 Parrot!
+  service.say(); // Hello, 🦜 Parrot!
 }
