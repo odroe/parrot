@@ -16,7 +16,7 @@ The [Dart language](https://dart.dev) has become more and more perfect under the
 
 Dart as a server-side development language is not without cases, such as [dart.dev](https://dart.dev) and [pub.dev](https://pub.dev). Obviously, dart.dev is a static website, while pub.dev is developed using Firebase.
 
-The emergence of Parrot is not a flash in the pan, but has been planned for a long time! For the development of Dart server-side applications, Dart has introduced [shelf](https://pub.dev/packages/shelf) and [googleapis](https://pub.dev/packages/googleapis), which is obviously insufficient. The [Angle framework](https://github.com/dukefirehawk/angel) that emerged in the community is a bold attempt. Under the birth of the Flutter ecosystem, a lot of toolkits based on Sourcegen or Codegen have been created, but none of them have solved the main problem - **The architecture**
+The emergence of Parrot is not a flash in the pan, but has been planned for a long time! For the development of Dart server-side applications, Dart has introduced [shelf](https://pub.dev/packages/shelf) and [googleapis](https://pub.dev/packages/googleapis), which is obviously insufficient. The [Angel framework](https://github.com/dukefirehawk/angel) that emerged in the community is a bold attempt. Under the birth of the Flutter ecosystem, a lot of toolkits based on Sourcegen or Codegen have been created, but none of them have solved the main problem - **The architecture**
 
 Parrot is designed to provide an out-of-the-box application architecture that allows for the easy creation of highly testable, extensible, loosely coupled, and easily maintainable applications. The architecture is heavily inspired by [Nest.js](https://github.com/nestjs/nest).
 
