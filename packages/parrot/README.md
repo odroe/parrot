@@ -63,4 +63,4 @@ Read the [documentation](https://parrot.odroe.com) for more information.
 
 ## Examples
 
-For more examples please visit 👉 [examples](../../examples/)
+For more examples please visit 👉 [examples](https://github.com/odroe/parrot/tree/main/examples)
