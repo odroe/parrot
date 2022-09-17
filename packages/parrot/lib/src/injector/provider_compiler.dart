@@ -219,16 +219,18 @@ class ProviderCompiler {
     ModuleContext module,
     ParameterMirror parameter,
   ) async {
+    final Type provider = await resolveParameterProvider(parameter);
+    final ClassMirror classMirror = reflectClass(provider);
+
     if (parameter.type.reflectedType == null.runtimeType) {
       return null;
-    } else if (hasInjectableAnnotation(parameter.type)) {
+    } else if (hasInjectableAnnotation(classMirror)) {
       // Check the parameter type scope.
-      if (!(await module.hasProviderScope(parameter.type.reflectedType))) {
+      if (!(await module.hasProviderScope(provider))) {
         throw Exception(
             'The provider ${parameter.type.reflectedType} must be declared in the module ${module.type}.');
       }
 
-      final Type provider = await resolveParameterProvider(parameter);
       final ModuleContext owner = await findProviderOwnerModule(provider);
 
       return await compileProvider(owner, provider);
@@ -261,16 +263,14 @@ class ProviderCompiler {
   /// Resolve the parameter provider.
   Future<Type> resolveParameterProvider(ParameterMirror parameter) async {
     final Iterable<Type> types = parameter.metadata
+        .map((e) => e.reflectee)
         .whereType<Inject>()
-        .map((e) => e.type ?? parameter.type.reflectedType);
+        .map((Inject inject) => inject.type ?? parameter.type.reflectedType);
 
     // If types length is > 1, throw an error.
     if (types.length > 1) {
-      throw Exception('''
-The parameter ${parameter.simpleName} has multiple providers, please use the @Inject annotation to specify the provider.
-
-Location: ${parameter.location?.sourceUri}: ${parameter.location?.line}
-''');
+      throw Exception(
+          'The parameter ${parameter.simpleName} has more than one @Inject annotation.');
     }
 
     return types.isEmpty ? parameter.type.reflectedType : types.first;
@@ -288,9 +288,11 @@ Location: ${parameter.location?.sourceUri}: ${parameter.location?.line}
   /// Find Provider Dependency Tree.
   ///
   /// If a circular dependency occurs, an error is thrown.
-  ProviderDependencyTree findProviderDependencyTree(
-      ClassMirror provider, Symbol factoryName,
-      [ProviderDependencyTree? parent]) {
+  Future<ProviderDependencyTree> findProviderDependencyTree(
+    ClassMirror provider,
+    Symbol factoryName, [
+    ProviderDependencyTree? parent,
+  ]) async {
     ProviderDependencyTree? node = parent;
     while (node != null) {
       if (node.provider == provider.reflectedType) {
@@ -329,9 +331,12 @@ If your provider requires circular dependencies, use property-based injection：
       final ParameterMirror parameter = iterator.current;
 
       if (parameter.type is ClassMirror) {
-        dependencyTree.dependencies.add(findProviderDependencyTree(
-          parameter.type as ClassMirror,
-          resolveProviderFactoryName(parameter.type as ClassMirror),
+        final Type resolvedType = await resolveParameterProvider(parameter);
+        final ClassMirror providerClassMirror = reflectClass(resolvedType);
+
+        dependencyTree.dependencies.add(await findProviderDependencyTree(
+          providerClassMirror,
+          resolveProviderFactoryName(providerClassMirror),
           dependencyTree,
         ));
         continue;

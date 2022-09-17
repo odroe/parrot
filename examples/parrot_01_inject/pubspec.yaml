@@ -1,4 +1,4 @@
-name: parrot_00_simple
+name: parrot_01_inject
 environment:
   sdk: '>=2.10.0 <3.0.0'
 dependencies:

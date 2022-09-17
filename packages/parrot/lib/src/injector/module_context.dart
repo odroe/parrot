@@ -116,7 +116,7 @@ class ModuleContext implements ParrotContext {
           .get<ModuleContext>(TypedSymbol.create(dependency))
           .resolve();
 
-      if (await context.hasProviderExport(provider)) return true;
+      if (await context.hasExport(provider)) return true;
     }
 
     // If the privider export in global module exports.
@@ -124,8 +124,10 @@ class ModuleContext implements ParrotContext {
   }
 
   /// Has a provider export in the module.
-  Future<bool> hasProviderExport(Type provider) async {
+  Future<bool> hasExport(Type provider) async {
     for (final Type export in annotation.exports) {
+      if (export == provider) return true;
+
       // Create the export symbol.
       final Symbol symbol = TypedSymbol.create(export);
 
@@ -147,7 +149,7 @@ class ModuleContext implements ParrotContext {
       final ModuleContext context = await token.resolve() as ModuleContext;
 
       // If the module context has provider export, return true.
-      if (await context.hasProviderExport(provider)) {
+      if (await context.hasExport(provider)) {
         return true;
       }
     }
@@ -168,8 +170,7 @@ class ModuleContext implements ParrotContext {
           await iterator.current.resolve() as ModuleContext;
 
       // If the module context is
-      if (context.annotation.global &&
-          await context.hasProviderExport(provider)) {
+      if (context.annotation.global && await context.hasExport(provider)) {
         return true;
       }
     }
