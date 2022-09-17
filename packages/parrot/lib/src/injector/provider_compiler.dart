@@ -228,7 +228,10 @@ class ProviderCompiler {
             'The provider ${parameter.type.reflectedType} must be declared in the module ${module.type}.');
       }
 
-      return await compileProvider(module, parameter.type.reflectedType);
+      final Type provider = await resolveParameterProvider(parameter);
+      final ModuleContext owner = await findProviderOwnerModule(provider);
+
+      return await compileProvider(owner, provider);
     } else if (parameter.hasDefaultValue) {
       if (parameter.defaultValue != null) {
         return SingletonToken(Symbol.empty, parameter.defaultValue!.reflectee);
@@ -238,6 +241,39 @@ class ProviderCompiler {
     }
 
     throw Exception('The parameter type ${parameter.type} is not supported.');
+  }
+
+  /// Find provider owner module.
+  Future<ModuleContext> findProviderOwnerModule(Type provider) async {
+    final Iterator<ParrotToken<ModuleContext>> iterator =
+        container.whereType<ParrotToken<ModuleContext>>().iterator;
+
+    while (iterator.moveNext()) {
+      final ModuleContext module = await iterator.current.resolve();
+      if (module.annotation.providers.contains(provider)) {
+        return module;
+      }
+    }
+
+    throw Exception('The provider $provider not found owner module.');
+  }
+
+  /// Resolve the parameter provider.
+  Future<Type> resolveParameterProvider(ParameterMirror parameter) async {
+    final Iterable<Type> types = parameter.metadata
+        .whereType<Inject>()
+        .map((e) => e.type ?? parameter.type.reflectedType);
+
+    // If types length is > 1, throw an error.
+    if (types.length > 1) {
+      throw Exception('''
+The parameter ${parameter.simpleName} has multiple providers, please use the @Inject annotation to specify the provider.
+
+Location: ${parameter.location?.sourceUri}: ${parameter.location?.line}
+''');
+    }
+
+    return types.isEmpty ? parameter.type.reflectedType : types.first;
   }
 
   /// Has injectable annotation.
