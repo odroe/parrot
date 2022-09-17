@@ -96,14 +96,29 @@ class ProviderCompiler {
     // Because the method of circular dependency will throw an error.
     findProviderDependencyTree(classMirror, factoryName);
 
+    final List<ParrotToken?> positionalArguments =
+        await resolvePositionalArguments(module, factoryMirror.parameters);
+    final Map<Symbol, ParrotToken?> namedArguments =
+        await resilveNamedArguments(module, factoryMirror.parameters);
+
     // Create the provider factory.
-    Future<Object> factory() async => classMirror
-        .newInstance(
-          factoryMirror.constructorName,
-          await resolvePositionalArguments(module, factoryMirror.parameters),
-          await resilveNamedArguments(module, factoryMirror.parameters),
-        )
-        .reflectee;
+    Future<Object> factory() async {
+      final List resolvedPositionalArguments = await Future.wait(
+          positionalArguments
+              .map((ParrotToken? token) async => token?.resolve()));
+
+      final Map<Symbol, Object?> resolvedNamedArguments = Map.fromEntries(
+          await Future.wait(namedArguments.entries
+              .map((e) async => MapEntry(e.key, await e.value?.resolve()))));
+
+      return classMirror
+          .newInstance(
+            factoryMirror.constructorName,
+            resolvedPositionalArguments,
+            resolvedNamedArguments,
+          )
+          .reflectee;
+    }
 
     return TransientProviderContext(
       modules: await findProviderOwnerModules(classMirror),
@@ -113,7 +128,7 @@ class ProviderCompiler {
   }
 
   /// Resolve positional arguments.
-  Future<List> resolvePositionalArguments(
+  Future<List<ParrotToken?>> resolvePositionalArguments(
     ModuleContext module,
     List<ParameterMirror> parameters,
   ) async {
@@ -122,7 +137,7 @@ class ProviderCompiler {
         .toList();
     final Iterator<ParameterMirror> iterator = positionalParameters.iterator;
 
-    final List positionalArguments = [];
+    final List<ParrotToken?> positionalArguments = [];
     while (iterator.moveNext()) {
       positionalArguments.add(await compileArgument(module, iterator.current));
     }
@@ -131,7 +146,7 @@ class ProviderCompiler {
   }
 
   /// Resolve named arguments.
-  Future<Map<Symbol, dynamic>> resilveNamedArguments(
+  Future<Map<Symbol, ParrotToken?>> resilveNamedArguments(
     ModuleContext module,
     List<ParameterMirror> parameters,
   ) async {
@@ -140,7 +155,7 @@ class ProviderCompiler {
         .toList();
     final Iterator<ParameterMirror> iterator = namedParameters.iterator;
 
-    final Map<Symbol, dynamic> namedArguments = {};
+    final Map<Symbol, ParrotToken?> namedArguments = {};
     while (iterator.moveNext()) {
       namedArguments[iterator.current.simpleName] = await compileArgument(
         module,
@@ -200,7 +215,7 @@ class ProviderCompiler {
   }
 
   /// Compile argument.
-  Future<dynamic> compileArgument(
+  Future<ParrotToken?> compileArgument(
     ModuleContext module,
     ParameterMirror parameter,
   ) async {
@@ -213,12 +228,13 @@ class ProviderCompiler {
             'The provider ${parameter.type.reflectedType} must be declared in the module ${module.type}.');
       }
 
-      final ProviderContext result =
-          await compileProvider(module, parameter.type.reflectedType);
-
-      return result.resolve();
+      return await compileProvider(module, parameter.type.reflectedType);
     } else if (parameter.hasDefaultValue) {
-      return parameter.defaultValue;
+      if (parameter.defaultValue != null) {
+        return SingletonToken(Symbol.empty, parameter.defaultValue!.reflectee);
+      }
+
+      return null;
     }
 
     throw Exception('The parameter type ${parameter.type} is not supported.');
