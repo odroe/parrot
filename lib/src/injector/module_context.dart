@@ -3,6 +3,7 @@ import '../container/parrot_container.dart';
 import '../container/parrot_token.dart';
 import '../parrot_context.dart';
 import '../utils/typed_symbol.dart';
+import 'provider_context.dart';
 
 class ModuleContext implements ParrotContext {
   ModuleContext({
@@ -22,22 +23,6 @@ class ModuleContext implements ParrotContext {
 
   /// Metadata for other annotations of the module.
   final List<ParrotContext> metadata = [];
-
-  @override
-  Future<T> get<T extends Object>(Type type) async {
-    if (await hasProviderScope(type)) {
-      return await container.get(TypedSymbol.create(type)).resolve() as T;
-    }
-
-    throw Exception(
-        'The $type is not defined in the ${this.type} module providers or exports.');
-  }
-
-  @override
-  Future<T> resolve<T extends Object>(Type type) {
-    // TODO: implement resolve
-    throw UnimplementedError();
-  }
 
   @override
   Future<ModuleContext> select(Type module) async {
@@ -66,10 +51,61 @@ class ModuleContext implements ParrotContext {
             throw Exception('The module $module is not found.'));
   }
 
+  @override
+  Future<T> get<T extends Object>(Type type) async {
+    if (await hasProviderScope(type)) {
+      return await container.get(TypedSymbol.create(type)).resolve() as T;
+    }
+
+    throw Exception(
+        'The $type is not defined in the ${this.type} module providers or exports.');
+  }
+
+  @override
+  Future<T> resolve<T extends Object>(Type type) async {
+    if (await hasProviderDefinition(type) ||
+        await hasProviderDefinitionInGlobal(type)) {
+      return await container.get(TypedSymbol.create(type)).resolve() as T;
+    }
+
+    throw Exception('The $type is not defined in the ${this.type} module.');
+  }
+
+  /// Has a provider defined.
+  Future<bool> hasProviderDefinition(Type provider) async {
+    if (annotation.providers.contains(provider)) return true;
+    for (final Type dependency in annotation.dependencies) {
+      final ModuleContext context = await container
+          .get<ModuleContext>(TypedSymbol.create(dependency))
+          .resolve();
+      if (await context.hasProviderDefinition(provider)) return true;
+    }
+
+    return false;
+  }
+
+  /// has a provider defined in global modules
+  Future<bool> hasProviderDefinitionInGlobal(Type provider) async {
+    // Get all module context token.
+    final iterator =
+        container.where((element) => element.type == ModuleContext).iterator;
+    while (iterator.moveNext()) {
+      final ModuleContext context =
+          await iterator.current.resolve() as ModuleContext;
+      if (context.annotation.global &&
+          await context.hasProviderDefinition(provider)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /// Has a provider scope in the module.
   ///
-  /// 1. In the module providers.
-  /// 2. In the module dependencies module exports.
+  /// 1. Defined in the module providers.
+  /// 2. In the module exported.
+  /// 3. In global modules exported.
   Future<bool> hasProviderScope(Type provider) async {
     // Check if the type is in the module providers.
     if (annotation.providers.contains(provider)) return true;
@@ -83,7 +119,8 @@ class ModuleContext implements ParrotContext {
       if (await context.hasProviderExport(provider)) return true;
     }
 
-    return false;
+    // If the privider export in global module exports.
+    return hasProviderInGlobalExport(provider);
   }
 
   /// Has a provider export in the module.
@@ -92,33 +129,48 @@ class ModuleContext implements ParrotContext {
       // Create the export symbol.
       final Symbol symbol = TypedSymbol.create(export);
 
-      // If the export is a module.
-      if (container.has(symbol)) {
-        final ParrotToken token = container.get(symbol);
+      // If token not registered, continue.
+      if (!container.has(symbol)) continue;
 
-        if (token.type != ModuleContext) {
-          continue;
-        }
+      // Get parrot token.
+      final ParrotToken token = container.get(symbol);
 
-        final ModuleContext context = await token.resolve() as ModuleContext;
-        if (await context.hasProviderExport(provider)) {
-          return true;
-        }
+      // If the token is ProviderContext, and type is provider, return true.
+      if (token is ProviderContext && token.type == provider) {
+        return true;
       }
 
-      if (export == provider) return true;
+      // If token type is not ModuleContext, continue.
+      if (token.type != ModuleContext) continue;
+
+      // Get module context.
+      final ModuleContext context = await token.resolve() as ModuleContext;
+
+      // If the module context has provider export, return true.
+      if (await context.hasProviderExport(provider)) {
+        return true;
+      }
     }
 
-    final iterator = container.iterator;
+    return false;
+  }
+
+  /// Has a provider export in global modules.
+  Future<bool> hasProviderInGlobalExport(Type provider) async {
+    // Get all module context token.
+    final iterator =
+        container.where((element) => element.type == ModuleContext).iterator;
+
+    // Iterate all module context token.
     while (iterator.moveNext()) {
-      if (iterator.current.type == ModuleContext) {
-        final ModuleContext context =
-            await iterator.current.resolve() as ModuleContext;
-        if (context.annotation.global) {
-          if (await context.hasProviderExport(provider)) {
-            return true;
-          }
-        }
+      // Get module context.
+      final ModuleContext context =
+          await iterator.current.resolve() as ModuleContext;
+
+      // If the module context is
+      if (context.annotation.global &&
+          await context.hasProviderExport(provider)) {
+        return true;
       }
     }
 

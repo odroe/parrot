@@ -8,7 +8,6 @@ class SimpleService {
 }
 
 @Module(
-  dependencies: [AppModule],
   providers: [SimpleService],
 )
 class SimpleModule {}
@@ -19,9 +18,12 @@ class SimpleModule {}
 class AppModule {}
 
 void main() async {
-  final app = await ParrotApplication.create(AppModule);
-  final module = await app.select(SimpleModule);
-  final service = await module.get<SimpleService>(SimpleService);
+  // Create a parrot application.
+  final ParrotApplication app = await ParrotApplication.create(AppModule);
 
-  service.say(); // Hello, 🦜 Parrot!
+  // Resolve [SimpleService] from the application.
+  final SimpleService simple = await app.resolve(SimpleService);
+
+  // Call say method.
+  simple.say(); // Hello, 🦜 Parrot!
 }

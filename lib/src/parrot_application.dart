@@ -9,7 +9,11 @@ import 'utils/typed_symbol.dart';
 class ParrotApplication implements ParrotContext {
   const ParrotApplication({
     required this.context,
+    required this.container,
   });
+
+  /// Current application container.
+  final ParrotContainer container;
 
   /// Current compiled module context.
   final ModuleContext context;
@@ -33,7 +37,10 @@ class ParrotApplication implements ParrotContext {
         await ModuleCompiler(container).compile(module);
 
     // Create and returns a new parrot application.
-    final ParrotApplication app = ParrotApplication(context: context);
+    final ParrotApplication app = ParrotApplication(
+      context: context,
+      container: container,
+    );
     container.register(SingletonToken<ParrotApplication>(
       TypedSymbol.create(ParrotApplication),
       app,
