@@ -20,6 +20,12 @@ The emergence of Parrot is not a flash in the pan, but has been planned for a lo
 
 Parrot is designed to provide an out-of-the-box application architecture that allows for the easy creation of highly testable, extensible, loosely coupled, and easily maintainable applications. The architecture is heavily inspired by [Nest.js](https://github.com/nestjs/nest).
 
+## Status
+
+| Package | Pub | CI | Coverage |
+|:--------|:---:|:--:|:--------:|
+| `parrot` | [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot) |  | |
+
 ## Getting Started
 
 TODO
