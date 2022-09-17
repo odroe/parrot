@@ -1,3 +1,7 @@
+## 0.0.2
+
+- Implement `@Inject()` annotation.
+
 ## 0.0.1
 
 - Add `@Module` annotation.
