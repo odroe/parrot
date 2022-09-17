@@ -1,1 +1,0 @@
-🦜 Parrot - A progressive Dart framework for building efficient, reliable and scalable server-side applications.
