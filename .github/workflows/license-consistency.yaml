@@ -1,0 +1,23 @@
+# Check that each package/*/LICENSE is consistent with LICENSE.
+#
+# - If it does not exist, make a copy of the LICENSE.
+# - If there is an inconsistency, overwrite with LICENSE.
+name: License consistency
+on:
+  schedule:
+    # every day
+    - cron: '0 0 * * *'
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1.3
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: tools
+      - name: Fix license consistency
+        run: dart run tools/license_consistency.dart -l LICENSE -f LICENSE -d packages
+      # Check if the license inconsistency is fixed, throw an exception if so
+      - name: Check for fix license inconsistency
+        run: git status --porcelain
