@@ -1,4 +1,4 @@
-name: Parrot Analyze
+name: Parrot Coverage
 on: [push, pull_request]
 jobs:
   analyze:
@@ -7,7 +7,6 @@ jobs:
       matrix:
         package:
           - parrot
-          - parrot_shelf
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -18,7 +17,13 @@ jobs:
       - name: Install dependencies
         run: dart pub get
         working-directory: packages/${{ matrix.package }}
-      - name: Analyze ${{ matrix.package }}
+      - name: Test with Coverage
         working-directory: packages/${{ matrix.package }}
-        run: dart analyze
+        run: dart run coverage:test_with_coverage -o coverage
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: packages/${{ matrix.package }}/coverage/lcov.info
+          flags: ${{ matrix.package }}
+          fail_ci_if_error: true
           
