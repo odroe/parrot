@@ -1,0 +1,87 @@
+name: Test Parrot
+
+parrot:
+  sdk:
+    - stable
+    - 2.18.0
+  packages:
+    - parrot
+
+on: [push, pull_request]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: ${{ parrot.packages }}
+    steps:
+      - name: Cache pub hosted dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-hosted-stable
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: stable
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: ${{ matrix.package }}
+      - name: Analyze
+        run: dart analyze
+        working-directory: ${{ matrix.package }}
+  # test:
+  #   needs: analyze
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       package: ${{ parrot.packages }}
+  #       sdk: ${{ parrot.sdk }}
+
+# jobs:
+#   test:
+#     defaults:
+#       run:
+#         working-directory: .
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         os:
+#           - ubuntu-latest
+#         dart-sdk:
+#           - stable
+#           - 2.18.0
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: dart-lang/setup-dart@v1.3
+#         with:
+#           sdk: ${{ matrix.dart-sdk }}
+
+#       - uses: stelynx/dart-full-coverage@v1.0.5
+#         with:
+#           use_git_root: false
+#           main_dir: packages/parrot
+#           package: parrot
+#           path: lib
+#           test_file: test/coverage_helper_test.dart
+
+#       - name: Install dependencies
+#         working-directory: ./packages/parrot
+#         run: dart pub get
+
+#       - name: Test with coverage
+#         working-directory: ./packages/parrot
+#         run: dart test --coverage=coverage
+
+#       - name: Convert coverage data
+#         working-directory: ./packages/parrot
+#         run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
+
+#       - name: Upload coverage data to CodeCov
+#         uses: codecov/codecov-action@v1.0.7
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+#           file: packages/parrot/coverage.lcov
