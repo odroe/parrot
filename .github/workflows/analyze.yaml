@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         package:
-          - packages/parrot
+          - parrot
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -16,14 +16,14 @@ jobs:
           sdk: stable
       - name: Install dependencies
         run: dart pub get
-        working-directory: ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
       - name: Test with Coverage
-        working-directory: ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
         run: dart run coverage:test_with_coverage -o coverage
       - name: Upload Coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ${{ matrix.package }}/coverage/lcov.info
+          file: packages/${{ matrix.package }}/coverage/lcov.info
           flags: ${{ matrix.package }}
-          name: ${{ matrix.package }}
+          fail_ci_if_error: true
           

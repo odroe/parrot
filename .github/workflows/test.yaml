@@ -2,12 +2,11 @@ name: Parrot Test
 on: [push, pull_request]
 jobs:
   test:
-    needs: context
     runs-on: ubuntu-latest
     strategy:
       matrix:
         package:
-          - packages/parrot
+          - parrot
         sdk:
           - stable
           - 2.18.0
@@ -20,7 +19,7 @@ jobs:
           sdk: stable
       - name: Install dependencies
         run: dart pub get
-        working-directory: ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
       - name: Run tests
         run: dart test -r github
-        working-directory: ${{ matrix.package }}
+        working-directory: packages/${{ matrix.package }}
