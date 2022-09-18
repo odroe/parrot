@@ -45,10 +45,12 @@ class ModuleContext implements ParrotContext {
     }
 
     return container
-        .get<ModuleContext>(TypedSymbol.create(module))
-        .resolve()
-        .onError((error, stackTrace) =>
-            throw Exception('The module $module is not found.'));
+        .whereType<ParrotToken<ModuleContext>>()
+        .firstWhere(
+          (element) => element.identifier == TypedSymbol.create(module),
+          orElse: () => throw Exception('The module $module is not found.'),
+        )
+        .resolve();
   }
 
   @override
