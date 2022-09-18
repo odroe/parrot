@@ -37,7 +37,7 @@ jobs:
         uses: peter-evans/create-pull-request@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: fix(license): Fix license consistency
+          commit-message: "fix(license): Fix license inconsistency"
           title: Fix license inconsistency
           body: |
             This PR was created by a tool. It checks that each packages/*/LICENSE is consistent with LICENSE.
