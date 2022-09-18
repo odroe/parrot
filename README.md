@@ -2,6 +2,12 @@
 
 A progressive [Dart](https://dart.dev) framework for building **efficient**, **reliable** and **scalable** server-side applications.
 
+[![Parrot Analyze](https://github.com/odroe/parrot/actions/workflows/analyze.yaml/badge.svg)](https://github.com/odroe/parrot/actions/workflows/analyze.yaml)
+[![Parrot Test](https://github.com/odroe/parrot/actions/workflows/test.yaml/badge.svg)](https://github.com/odroe/parrot/actions/workflows/test.yaml)
+[![codecov](https://codecov.io/github/odroe/parrot/branch/main/graph/badge.svg)](https://codecov.io/github/odroe/parrot)
+[![Parrot license](https://img.shields.io/github/license/odroe/parrot)](LICENSE)
+
+
 ## What is Parrot?
 
 Parrot is a Dart framework for building server-side applications. It is designed to be modular and maintainable.
@@ -20,11 +26,13 @@ The emergence of Parrot is not a flash in the pan, but has been planned for a lo
 
 Parrot is designed to provide an out-of-the-box application architecture that allows for the easy creation of highly testable, extensible, loosely coupled, and easily maintainable applications. The architecture is heavily inspired by [Nest.js](https://github.com/nestjs/nest).
 
-## Status
+## Ecosystem
 
-| Package | Pub | CI | Coverage |
-|:--------|:---:|:--:|:--------:|
-| `parrot` | [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot) | ![GitHub Workflow Status](https://github.com/odroe/parrot/actions/workflows/parrot-ci.yaml/badge.svg) | ![Codecov](https://img.shields.io/codecov/c/github/odroe/parrot) |
+| Package | Version | Description |
+| ------- | ----------- | ------- |
+| [parrot](https://pub.dev/packages/parrot) | [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot) | Parrot core, Architecture and Dependency Injection Principles |
+| [parrot_shelf](https://pub.dev/packages/parrot_shelf) | [![pub package](https://img.shields.io/pub/v/parrot_shelf.svg)](https://pub.dev/packages/parrot_shelf) | Parrot adapter for [shelf](https://pub.dev/packages/shelf), For developing HTTP APIs or static website. |
+
 
 ## Getting Started
 

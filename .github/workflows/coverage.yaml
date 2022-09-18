@@ -1,4 +1,4 @@
-name: Parrot Coverage
+name: Coverage
 on: [push, pull_request]
 jobs:
   analyze:
