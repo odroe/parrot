@@ -1,0 +1,38 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+jobs:
+  test:
+    defaults:
+      run:
+        working-directory: ./
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        dart-sdk:
+          - stable
+          - 2.18.0
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: ${{ matrix.dart-sdk }}
+      - uses: stelynx/dart-full-coverage@v1.0.5
+        with:
+          package: parrot
+      - run: dart pub get
+      - run: dart test --coverage=coverage
+      - run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
+      - uses: codecov/codecov-action@v1.0.7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: coverage.lcov
