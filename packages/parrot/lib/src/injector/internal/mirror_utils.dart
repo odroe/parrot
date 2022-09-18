@@ -1,6 +1,6 @@
 import 'dart:mirrors';
 
-import '../annotations/injectable.dart';
+import '../../annotations/injectable.dart';
 
 /// Find the factory method mirror.
 MethodMirror findFactoryMethod(

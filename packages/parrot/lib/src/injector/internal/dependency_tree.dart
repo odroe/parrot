@@ -1,6 +1,6 @@
 import 'dart:mirrors';
 
-import './mirror_utils.dart';
+import 'mirror_utils.dart';
 
 class ProviderDependencyTree {
   ProviderDependencyTree(this.provider, [this.parent]);

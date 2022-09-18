@@ -6,8 +6,8 @@ import '../annotations/injectable.dart';
 import '../container/parrot_container.dart';
 import '../container/parrot_token.dart';
 import '../utils/typed_symbol.dart';
-import 'dependency_tree.dart';
-import 'mirror_utils.dart';
+import 'internal/dependency_tree.dart';
+import 'internal/mirror_utils.dart';
 import 'provider_context.dart';
 import 'scope.dart';
 
