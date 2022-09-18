@@ -10,7 +10,7 @@ jobs:
           - parrot_shelf
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1.3
         with:

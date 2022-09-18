@@ -1,0 +1,47 @@
+# Check that each package/*/LICENSE is consistent with LICENSE.
+#
+# - If it does not exist, make a copy of the LICENSE.
+# - If there is an inconsistency, overwrite with LICENSE.
+name: License Consistency
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.check.outputs.result }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: tools
+      - name: Fix license consistency
+        run: dart run tools/license_consistency.dart -l LICENSE -f LICENSE -d packages
+      - name: Check for fix license inconsistency
+        id: check
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            echo "::set-output name=result::failure"
+          else
+            echo "::set-output name=result::success"
+          fi
+  fix:
+    needs: check
+    if: needs.check.outputs.result == 'failure'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+      - name: Install dependencies
+        run: dart pub get
+        working-directory: tools
+      - name: Fix license consistency
+        run: dart run tools/license_consistency.dart -l LICENSE -f LICENSE -d packages
+      - name: Commit changes
+        run: |
+          git config --local user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --local user.name "${{ github.actor }}"
+          git add .
+          git commit -m "fix(license): Fix license inconsistency" -s
+      - name: Push changes
+        run: git push
