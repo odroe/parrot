@@ -12,7 +12,7 @@ jobs:
   test:
     defaults:
       run:
-        working-directory: ./packages/parrot
+        working-directory: .
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,15 +26,29 @@ jobs:
       - uses: dart-lang/setup-dart@v1.3
         with:
           sdk: ${{ matrix.dart-sdk }}
+
       - uses: stelynx/dart-full-coverage@v1.0.5
         with:
+          use_git_root: false
+          main_dir: packages/parrot
           package: parrot
           path: lib
           test_file: test/coverage_helper_test.dart
-      - run: dart pub get
-      - run: dart test --coverage=coverage
-      - run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
-      - uses: codecov/codecov-action@v1.0.7
+
+      - name: Install dependencies
+        working-directory: ./packages/parrot
+        run: dart pub get
+
+      - name: Test with coverage
+        working-directory: ./packages/parrot
+        run: dart test --coverage=coverage
+
+      - name: Convert coverage data
+        working-directory: ./packages/parrot
+        run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
+
+      - name: Upload coverage data to CodeCov
+        uses: codecov/codecov-action@v1.0.7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage.lcov
+          file: packages/parrot/coverage.lcov
