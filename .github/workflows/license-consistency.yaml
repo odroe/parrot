@@ -19,7 +19,7 @@ jobs:
         run: |
           if [[ -n $(git status -s) ]]; then exit 1; fi
   create-pr:
-    if: ${{ success() }}
+    if: ${{ failure() }}
     needs: check
     runs-on: ubuntu-latest
     steps:
