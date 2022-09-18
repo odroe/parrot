@@ -7,6 +7,8 @@ on: [push, pull_request]
 jobs:
   check:
     runs-on: ubuntu-latest
+    outputs:
+      result: ${{ steps.check.outputs.result }}
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.3
@@ -16,11 +18,16 @@ jobs:
       - name: Fix license consistency
         run: dart run tools/license_consistency.dart -l LICENSE -f LICENSE -d packages
       - name: Check for fix license inconsistency
+        id: check
         run: |
-          if [[ -n $(git status -s) ]]; then exit 1; fi
+          if [[ -n $(git status -s) ]]; then
+            echo "::set-output name=result::failure"
+          else
+            echo "::set-output name=result::success"
+          fi
   fix:
-    if: ${{ failure() }}
     needs: check
+    if: needs.check.outputs.result == 'failure'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
