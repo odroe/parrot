@@ -29,6 +29,8 @@ jobs:
       - uses: stelynx/dart-full-coverage@v1.0.5
         with:
           package: parrot
+          path: packages/parrot/lib
+          test_file: packages/parrot/test/coverage_helper_test.dart
       - run: dart pub get
       - run: dart test --coverage=coverage
       - run: dart pub run coverage:format_coverage -i coverage -l > coverage.lcov
