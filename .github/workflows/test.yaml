@@ -1,20 +1,22 @@
 name: Test Parrot
 
-parrot:
-  sdk:
-    - stable
-    - 2.18.0
-  packages:
-    - parrot
-
 on: [push, pull_request]
 
 jobs:
+  context:
+    name: Parrot Context
+    outputs:
+      sdk:
+        - stable
+        - 2.18.0
+      wotking-directory:
+        - packages/parrot
   analyze:
+    needs: context
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        package: ${parrot.packages}
+        wotking-directory: ${{ needs.context.outputs.wotking-directory }}
     steps:
       - name: Cache pub hosted dependencies
         uses: actions/cache@v2
@@ -29,10 +31,10 @@ jobs:
           sdk: stable
       - name: Install dependencies
         run: dart pub get
-        working-directory: ${{ matrix.package }}
+        working-directory: ${{ matrix.wotking-directory }}
       - name: Analyze
         run: dart analyze
-        working-directory: ${{ matrix.package }}
+        working-directory: ${{ matrix.wotking-directory }}
   # test:
   #   needs: analyze
   #   runs-on: ubuntu-latest
