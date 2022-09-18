@@ -3,7 +3,7 @@
 # - If it does not exist, make a copy of the LICENSE.
 # - If there is an inconsistency, overwrite with LICENSE.
 name: License Consistency
-on: [push]
+on: [push, pull_request]
 jobs:
   check:
     runs-on: ubuntu-latest
