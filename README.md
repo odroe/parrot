@@ -24,7 +24,7 @@ Parrot is designed to provide an out-of-the-box application architecture that al
 
 | Package | Pub | CI | Coverage |
 |:--------|:---:|:--:|:--------:|
-| `parrot` | [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot) | ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/odroe/parrot/ci.yaml) | ![Codecov](https://img.shields.io/codecov/c/github/odroe/parrot) |
+| `parrot` | [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot) | ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/odroe/parrot/parrot-ci.yaml) | ![Codecov](https://img.shields.io/codecov/c/github/odroe/parrot) |
 
 ## Getting Started
 
