@@ -37,8 +37,35 @@ class ProviderCompiler {
       ModuleContext module, Type provider) async {
     final ClassMirror classMirror = reflectClass(provider);
 
-    // Get the provider all injectable annotations.
-    final List<Injectable> annotations = classMirror.metadata
+    final Injectable annotation =
+        resolveInjectableAnnotation(classMirror, provider);
+    final Symbol symbol = TypedSymbol.create(provider);
+
+    if (hasCompiledProvider(symbol)) {
+      return getCompiledProvider(symbol);
+    }
+
+    final ProviderContext context =
+        await createProviderContext(module, classMirror, annotation);
+    registerCompiledProvider(context);
+
+    return context;
+  }
+
+  bool hasCompiledProvider(Symbol symbol) {
+    return container.has(symbol);
+  }
+
+  ProviderContext getCompiledProvider(Symbol symbol) {
+    return container.get(symbol) as ProviderContext;
+  }
+
+  void registerCompiledProvider(ProviderContext provider) {
+    container.register(provider);
+  }
+
+  Injectable resolveInjectableAnnotation(ClassMirror mirror, Type provider) {
+    final List<Injectable> annotations = mirror.metadata
         .where((InstanceMirror instance) => instance.reflectee is Injectable)
         .map<Injectable>((InstanceMirror instance) => instance.reflectee)
         .toList();
@@ -49,22 +76,7 @@ class ProviderCompiler {
           'The provider $provider must have exactly one `@Injectable()` annotation.');
     }
 
-    // Create the provider symbol.
-    final Symbol symbol = TypedSymbol.create(provider);
-
-    // If the provider is compiled return it.
-    if (container.has(symbol)) {
-      return container.get(symbol) as ProviderContext;
-    }
-
-    // Create the provider context.
-    final ProviderContext context =
-        await createProviderContext(module, classMirror, annotations.first);
-
-    // Add the provider context to the container.
-    container.register(context);
-
-    return context;
+    return annotations.first;
   }
 
   /// Create a provider context.
