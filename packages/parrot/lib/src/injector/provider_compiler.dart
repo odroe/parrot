@@ -6,8 +6,12 @@ import '../annotations/injectable.dart';
 import '../container/parrot_container.dart';
 import '../container/parrot_token.dart';
 import '../utils/typed_symbol.dart';
+import 'dependency_tree.dart';
+import 'mirror_utils.dart';
 import 'provider_context.dart';
 import 'scope.dart';
+
+typedef ProviderFactory = Future<Object> Function();
 
 class ProviderCompiler {
   const ProviderCompiler(this.container);
@@ -89,27 +93,47 @@ class ProviderCompiler {
     Symbol factoryName,
   ) async {
     final MethodMirror factoryMirror =
-        findFactoryMethodMirror(classMirror, factoryName);
+        findFactoryMethod(classMirror, factoryName);
 
     // Check circular dependencies.
     // Using [findProviderDependencyTree] to check circular dependencies.
     // Because the method of circular dependency will throw an error.
-    findProviderDependencyTree(classMirror, factoryName);
+    buildProviderDependencyTree(classMirror, factoryName);
 
-    final List<ParrotToken?> positionalArguments =
-        await resolvePositionalArguments(module, factoryMirror.parameters);
-    final Map<Symbol, ParrotToken?> namedArguments =
-        await resilveNamedArguments(module, factoryMirror.parameters);
+    final resolvedArguments =
+        await resolveArguments(module, factoryMirror.parameters);
 
+    return TransientProviderContext(
+      modules: await findProviderOwnerModules(classMirror),
+      type: classMirror.reflectedType,
+      factory:
+          buildProviderFactory(resolvedArguments, classMirror, factoryMirror),
+    );
+  }
+
+  ProviderFactory buildProviderFactory(
+    List<ResolvedArgument> resolvedArguments,
+    ClassMirror classMirror,
+    MethodMirror factoryMirror,
+  ) {
     // Create the provider factory.
-    Future<Object> factory() async {
+    Future<Object> resolve() async {
       final List resolvedPositionalArguments = await Future.wait(
-          positionalArguments
-              .map((ParrotToken? token) async => token?.resolve()));
+        resolvedArguments
+            .where((resolved) => _isPositionalArgument(resolved.mirror))
+            .map((resolved) async => resolved.token?.resolve()),
+      );
 
       final Map<Symbol, Object?> resolvedNamedArguments = Map.fromEntries(
-          await Future.wait(namedArguments.entries
-              .map((e) async => MapEntry(e.key, await e.value?.resolve()))));
+        await Future.wait(
+          resolvedArguments
+              .where((resolved) => _isNamedArgument(resolved.mirror))
+              .map((resolved) async => MapEntry(
+                    _getArgumentName(resolved.mirror),
+                    await resolved.token?.resolve(),
+                  )),
+        ),
+      );
 
       return classMirror
           .newInstance(
@@ -120,50 +144,35 @@ class ProviderCompiler {
           .reflectee;
     }
 
-    return TransientProviderContext(
-      modules: await findProviderOwnerModules(classMirror),
-      type: classMirror.reflectedType,
-      factory: factory,
-    );
+    return resolve;
   }
 
-  /// Resolve positional arguments.
-  Future<List<ParrotToken?>> resolvePositionalArguments(
+  /// Resolve arguments.
+  Future<List<ResolvedArgument>> resolveArguments(
     ModuleContext module,
     List<ParameterMirror> parameters,
   ) async {
-    final List<ParameterMirror> positionalParameters = parameters
-        .where((ParameterMirror parameter) => !parameter.isNamed)
-        .toList();
-    final Iterator<ParameterMirror> iterator = positionalParameters.iterator;
+    final Iterator<ParameterMirror> iterator = parameters.iterator;
 
-    final List<ParrotToken?> positionalArguments = [];
+    final List<ResolvedArgument> resolved = [];
     while (iterator.moveNext()) {
-      positionalArguments.add(await compileArgument(module, iterator.current));
+      resolved.add(ResolvedArgument(
+          iterator.current, await compileArgument(module, iterator.current)));
     }
 
-    return positionalArguments;
+    return resolved;
   }
 
-  /// Resolve named arguments.
-  Future<Map<Symbol, ParrotToken?>> resilveNamedArguments(
-    ModuleContext module,
-    List<ParameterMirror> parameters,
-  ) async {
-    final List<ParameterMirror> namedParameters = parameters
-        .where((ParameterMirror parameter) => parameter.isNamed)
-        .toList();
-    final Iterator<ParameterMirror> iterator = namedParameters.iterator;
+  bool _isPositionalArgument(ParameterMirror mirror) {
+    return !mirror.isNamed;
+  }
 
-    final Map<Symbol, ParrotToken?> namedArguments = {};
-    while (iterator.moveNext()) {
-      namedArguments[iterator.current.simpleName] = await compileArgument(
-        module,
-        iterator.current,
-      );
-    }
+  bool _isNamedArgument(ParameterMirror mirror) {
+    return mirror.isNamed;
+  }
 
-    return namedArguments;
+  Symbol _getArgumentName(ParameterMirror mirror) {
+    return mirror.simpleName;
   }
 
   /// Find provider owner modules.
@@ -183,43 +192,12 @@ class ProviderCompiler {
     return modules;
   }
 
-  /// Find the factory method mirror.
-  MethodMirror findFactoryMethodMirror(
-      ClassMirror classMirror, Symbol factoryName) {
-    final Symbol symbol = factoryName == Symbol.empty
-        ? Symbol(classMirror.reflectedType.toString())
-        : factoryName;
-
-    final DeclarationMirror? declarationMirror =
-        classMirror.declarations[symbol];
-    if (declarationMirror != null && declarationMirror is MethodMirror) {
-      // If the factory not is a constructor, throw an error.
-      if (declarationMirror.isConstConstructor ||
-          declarationMirror.isConstructor ||
-          declarationMirror.isFactoryConstructor ||
-          declarationMirror.isGenerativeConstructor ||
-          declarationMirror.isRedirectingConstructor) {
-        return declarationMirror;
-      } else if (declarationMirror.isAbstract) {
-        throw Exception('The provider factory $symbol must not be abstract.');
-      } else if (declarationMirror.isPrivate) {
-        throw Exception('The provider factory $symbol must not be private.');
-      }
-
-      throw Exception(
-          'The factory method $symbol must be a constructor of the provider ${classMirror.reflectedType}.');
-    }
-
-    throw Exception(
-        'The factory method $symbol does not exist in the class ${classMirror.reflectedType}.');
-  }
-
   /// Compile argument.
   Future<ParrotToken?> compileArgument(
     ModuleContext module,
     ParameterMirror parameter,
   ) async {
-    final Type provider = await resolveParameterProvider(parameter);
+    final Type provider = await resolveParameterType(parameter);
     final ClassMirror classMirror = reflectClass(provider);
 
     if (parameter.type.reflectedType == null.runtimeType) {
@@ -259,131 +237,12 @@ class ProviderCompiler {
 
     throw Exception('The provider $provider not found owner module.');
   }
-
-  /// Resolve the parameter provider.
-  Future<Type> resolveParameterProvider(ParameterMirror parameter) async {
-    final Iterable<Type> types = parameter.metadata
-        .map((e) => e.reflectee)
-        .whereType<Inject>()
-        .map((Inject inject) => inject.type ?? parameter.type.reflectedType);
-
-    // If types length is > 1, throw an error.
-    if (types.length > 1) {
-      throw Exception(
-          'The parameter ${parameter.simpleName} has more than one @Inject annotation.');
-    }
-
-    return types.isEmpty ? parameter.type.reflectedType : types.first;
-  }
-
-  /// Has injectable annotation.
-  bool hasInjectableAnnotation(TypeMirror mirror) {
-    if (mirror is! ClassMirror) return false;
-
-    return mirror.metadata.where((InstanceMirror annotation) {
-      return annotation.reflectee is Injectable;
-    }).isNotEmpty;
-  }
-
-  /// Find Provider Dependency Tree.
-  ///
-  /// If a circular dependency occurs, an error is thrown.
-  Future<ProviderDependencyTree> findProviderDependencyTree(
-    ClassMirror provider,
-    Symbol factoryName, [
-    ProviderDependencyTree? parent,
-  ]) async {
-    ProviderDependencyTree? node = parent;
-    while (node != null) {
-      if (node.provider == provider.reflectedType) {
-        throw Exception('''
-Circular dependency detected:
-    ${parent!.toDependencyPath(node.provider.toString())}
-
-If your provider requires circular dependencies, use property-based injection：
-    @Injectable()
-    class A {
-      @Inject() late final B b;
-    }
-
-    @Injectable()
-    class B {
-      @Inject() late final A a;
-    }
-''');
-      }
-
-      node = node.parent;
-    }
-
-    final ProviderDependencyTree dependencyTree =
-        ProviderDependencyTree(provider.reflectedType, parent);
-
-    // Find the factory method mirror.
-    final MethodMirror factoryMirror =
-        findFactoryMethodMirror(provider, factoryName);
-
-    // Get parameters iterator.
-    final Iterator<ParameterMirror> iterator =
-        factoryMirror.parameters.iterator;
-
-    while (iterator.moveNext()) {
-      final ParameterMirror parameter = iterator.current;
-
-      if (parameter.type is ClassMirror) {
-        final Type resolvedType = await resolveParameterProvider(parameter);
-        final ClassMirror providerClassMirror = reflectClass(resolvedType);
-
-        dependencyTree.dependencies.add(await findProviderDependencyTree(
-          providerClassMirror,
-          resolveProviderFactoryName(providerClassMirror),
-          dependencyTree,
-        ));
-        continue;
-      }
-
-      dependencyTree.dependencies.add(ProviderDependencyTree(
-        parameter.type.reflectedType,
-        dependencyTree,
-      ));
-    }
-
-    return dependencyTree;
-  }
-
-  /// Resolve factory name.
-  Symbol resolveProviderFactoryName(ClassMirror classMirror) {
-    final Iterable<Injectable> results = classMirror.metadata
-        .map((InstanceMirror element) => element.reflectee)
-        .whereType<Injectable>();
-
-    if (results.length != 1) {
-      throw Exception(
-          'The provider ${classMirror.reflectedType} must have exactly one `@Injectable()` annotation.');
-    }
-
-    return results.first.factory;
-  }
 }
 
-class ProviderDependencyTree {
-  ProviderDependencyTree(this.provider, [this.parent]);
+class ResolvedArgument {
+  const ResolvedArgument(this.mirror, this.token);
 
-  final ProviderDependencyTree? parent;
-  final Type provider;
-  final List<ProviderDependencyTree> dependencies = [];
+  final ParameterMirror mirror;
 
-  // Returns dependency path.
-  String toDependencyPath([String? end]) {
-    final List<String> path = [];
-    if (end != null) path.add(end);
-
-    ProviderDependencyTree? dependency = this;
-    while (dependency != null) {
-      path.add(dependency.provider.toString());
-      dependency = dependency.parent;
-    }
-
-    return path.reversed.join(' -> ');
-  }
+  final ParrotToken? token;
 }

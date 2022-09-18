@@ -28,13 +28,13 @@ class ParrotApplication implements ParrotContext {
   Future<ModuleContext> select(Type module) => context.select(module);
 
   /// Create a new [ParrotApplication] instance.
-  static Future<ParrotApplication> create(Type module) async {
+  static Future<ParrotApplication> create(Type rootModule) async {
     // Create a new parrot container.
     final ParrotContainer container = ParrotContainer();
 
     // Compile the module.
     final ModuleContext context =
-        await ModuleCompiler(container).compile(module);
+        await ModuleCompiler(container).compile(rootModule);
 
     // Create and returns a new parrot application.
     final ParrotApplication app = ParrotApplication(
