@@ -4,7 +4,7 @@ import 'app.service.dart';
 import 'say/say.module.dart';
 
 @Module(
-  dependencies: [SayModule],
+  constructorParams: [SayModule],
   providers: [AppService],
 )
 class AppModule {}

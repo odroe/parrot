@@ -1,4 +1,4 @@
-import 'package:parrot/src/container/container.dart';
+import 'package:parrot/src/container/v1/internal/container.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -32,7 +32,7 @@ void main() {
       container.register(
         Identifier.string("foo"),
         lifetime: InstanceLifetime.singleton(),
-        provider: InstanceProvider.mirror<_Foo>(),
+        provider: InstanceProvider.reflectClass<_Foo>(),
       );
 
       final first = container.get(Identifier.string("foo"));
@@ -45,7 +45,7 @@ void main() {
       container.register(
         Identifier.string("foo"),
         lifetime: InstanceLifetime.transient(),
-        provider: InstanceProvider.mirror<_Foo>(),
+        provider: InstanceProvider.reflectClass<_Foo>(),
       );
 
       final first = container.get(Identifier.string("foo"));
@@ -55,14 +55,29 @@ void main() {
     });
   });
 
-  test("should returns whether an identifier is bound to instances", () {
-    container.register(
-      Identifier.string("foo"),
-      lifetime: InstanceLifetime.singleton(),
-      provider: InstanceProvider.mirror(),
-    );
+  group("returns whether an identifier is bound to instance", () {
+    test("should return true if an identifier is bound to instance", () {
+      container.register(
+        Identifier.string("foo"),
+        lifetime: InstanceLifetime.singleton(),
+        provider: InstanceProvider.reflectClass(),
+      );
 
-    expect(container.has(Identifier.string("foo")), true);
+      expect(container.has(Identifier.string("foo")), true);
+    });
+
+    test(
+        "should return true if an identifier is bound to instance in parent container",
+        () {
+      container.register(
+        Identifier.string("foo"),
+        lifetime: InstanceLifetime.singleton(),
+        provider: InstanceProvider.reflectClass(),
+      );
+      final child = container.createChild();
+
+      expect(child.has(Identifier.string("foo")), true);
+    });
   });
 }
 
