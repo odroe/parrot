@@ -83,15 +83,6 @@ class None<T> implements Option<T> {
   }
 }
 
-class IteratorIterable<T> extends Iterable<T> {
-  const IteratorIterable(this._iterator);
-
-  final Iterator<T> _iterator;
-
-  @override
-  Iterator<T> get iterator => _iterator;
-}
-
 typedef ContextBuilder = Context Function(Context parent);
 
 abstract class Context implements Iterable<Context> {
