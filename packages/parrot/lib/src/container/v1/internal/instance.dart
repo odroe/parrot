@@ -1,6 +1,7 @@
 import 'dart:mirrors';
 
-import 'package:parrot/src/container/v1/internal/helpers/interpreter.dart';
+import 'package:parrot/src/common/container.dart';
+import 'package:parrot/src/common/interpreter.dart';
 
 import 'mirror.dart';
 
