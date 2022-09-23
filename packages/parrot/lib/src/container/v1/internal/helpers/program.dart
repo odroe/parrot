@@ -36,20 +36,15 @@ class Program {
 
   final List<ContextBuilder> _static = [];
 
-  void defineEntrypoint(
-    Option<Object> Function(JustInTimeInvocationDelegate) builder,
-  ) {
-    defineFunction(Symbol("_main"), builder);
+  void defineEntrypoint(JustInTimeInvocation invocation) {
+    defineFunction(Symbol("_main"), invocation);
   }
 
-  void defineFunction(
-    Object symbol,
-    JustInTimeInvocation delegate,
-  ) {
+  void defineFunction(Object symbol, JustInTimeInvocation invocation) {
     _static.add(
       (parent) => FunctionDeclaration(
         symbol,
-        CompileAndInvokeInvocation(JustInTimeInvocationCompiler(delegate)),
+        CompileAndInvokeInvocation(JustInTimeInvocationCompiler(invocation)),
         parent: parent,
       ),
     );
