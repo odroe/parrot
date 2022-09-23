@@ -37,19 +37,19 @@ class Program {
   final List<ContextBuilder> _static = [];
 
   void defineEntrypoint(
-    Option<Object> Function(InvocationDelegate) builder,
+    Option<Object> Function(JustInTimeInvocationDelegate) builder,
   ) {
     defineFunction(Symbol("_main"), builder);
   }
 
   void defineFunction(
     Object symbol,
-    Invocation delegate,
+    JustInTimeInvocation delegate,
   ) {
     _static.add(
       (parent) => FunctionDeclaration(
         symbol,
-        CompileAndInvokeInvocation(InvocationCompiler(delegate)),
+        CompileAndInvokeInvocation(JustInTimeInvocationCompiler(delegate)),
         parent: parent,
       ),
     );
@@ -63,23 +63,25 @@ class Program {
   }
 }
 
-typedef Invocation = Option<Object> Function(InvocationDelegate);
+typedef JustInTimeInvocation = Option<Object> Function(
+  JustInTimeInvocationDelegate delegate,
+);
 
-class InvocationCompiler {
-  const InvocationCompiler(this.invocation);
+class JustInTimeInvocationCompiler {
+  const JustInTimeInvocationCompiler(this.invocation);
 
-  final Invocation invocation;
+  final JustInTimeInvocation invocation;
 
   Tuple2<Context, Option<Instruction>> compileAndRun(
     JustInTimeContext context,
   ) {
-    final compiler = InvocationDelegate(context);
-    return compiler.compileAndRun(invocation);
+    final delegate = JustInTimeInvocationDelegate(context);
+    return delegate.compileAndRun(invocation);
   }
 }
 
-class InvocationDelegate {
-  InvocationDelegate(this._context);
+class JustInTimeInvocationDelegate {
+  JustInTimeInvocationDelegate(this._context);
 
   final JustInTimeContext _context;
 
@@ -90,9 +92,6 @@ class InvocationDelegate {
 
   Iterable<Context> get _stackFrame =>
       _context.snapshot.takeWhile((e) => e is! StackFrame);
-
-  ReturnAddress get _returnAddress =>
-      _stackFrame.whereType<ReturnAddress>().single;
 
   Iterable<Argument> get arguments => _stackFrame.whereType<Argument>();
 
@@ -136,7 +135,8 @@ class InvocationDelegate {
         .firstWhere((e) => e.value.symbol == symbol, orElse: () => None());
   }
 
-  Tuple2<Context, Option<Instruction>> compileAndRun(Invocation invocation) {
+  Tuple2<Context, Option<Instruction>> compileAndRun(
+      JustInTimeInvocation invocation) {
     return Tuple2(
       _context.snapshot,
       Some(InvokeNativeFunction((context) => invocation.call(this))),
@@ -198,15 +198,6 @@ class StackFrame extends Marker {
 
   @override
   final Context? parent;
-}
-
-class ReturnAddress extends State {
-  const ReturnAddress(this.context, {this.parent});
-
-  @override
-  final Context? parent;
-
-  final Context context;
 }
 
 class Argument extends State {
@@ -299,7 +290,7 @@ class Interrupt implements Instruction {
 
   @override
   String toString() {
-    return "SaveCallSite()";
+    return "Interrupt()";
   }
 }
 
@@ -423,7 +414,7 @@ class InvokeDeclaredFunction implements Instruction {
 class CompileAndInvokeInvocation implements Instruction {
   CompileAndInvokeInvocation(this.compiler);
 
-  final InvocationCompiler compiler;
+  final JustInTimeInvocationCompiler compiler;
 
   @override
   Tuple2<Context, Option<Instruction>> run(

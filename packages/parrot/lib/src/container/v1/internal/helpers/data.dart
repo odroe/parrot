@@ -11,6 +11,8 @@ class Tuple2<T1, T2> {
           Tuple2<R1, R2> Function(T1 first, T2 second) mapper) =>
       mapper(first, second);
 
+  Tuple2<R1, R2> cast<R1, R2>() => Tuple2(first as R1, second as R2);
+
   @override
   String toString() {
     return "Tuple2<${T1.toString()}, ${T2.toString()}>(first=${first.toString()}, second=${second.toString()})";
@@ -129,12 +131,12 @@ class MutableContext with IterableMixin<Context> implements Context {
   @override
   Context? get parent => _context.parent;
 
-  @override
-  Iterator<Context> get iterator => _context.iterator;
-
   Context get latest => _context;
 
   Context get snapshot => latest;
+
+  @override
+  Iterator<Context> get iterator => latest.iterator;
 
   @override
   Context derive(ContextBuilder builder) {
