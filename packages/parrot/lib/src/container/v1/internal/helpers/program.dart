@@ -44,7 +44,8 @@ class Program {
     _static.add(
       (parent) => FunctionDeclaration(
         symbol,
-        CompileAndInvokeInvocation(JustInTimeInvocationCompiler(invocation)),
+        CompileAndInvokeJustInTimeInvocation(
+            JustInTimeInvocationCompiler(invocation)),
         parent: parent,
       ),
     );
@@ -406,8 +407,8 @@ class InvokeDeclaredFunction implements Instruction {
   }
 }
 
-class CompileAndInvokeInvocation implements Instruction {
-  CompileAndInvokeInvocation(this.compiler);
+class CompileAndInvokeJustInTimeInvocation implements Instruction {
+  CompileAndInvokeJustInTimeInvocation(this.compiler);
 
   final JustInTimeInvocationCompiler compiler;
 
@@ -421,7 +422,7 @@ class CompileAndInvokeInvocation implements Instruction {
 
   @override
   String toString() {
-    return "CompileAndInvokeInvocation()";
+    return "CompileAndInvokeJustInTimeInvocation()";
   }
 }
 
