@@ -11,10 +11,12 @@ void main() {
       final first = context.getArgument(0).cast<int>();
       final second = context.getArgument(1).cast<int>();
 
+      context.dumpState();
+
       return Some(first.value + second.value);
     });
     program.defineEntrypoint((context) {
-      print(context.callFunction(Symbol("sum"), const [1, 2]));
+      context.callFunction(Symbol("sum"), const [1, 2]);
 
       return None();
     });

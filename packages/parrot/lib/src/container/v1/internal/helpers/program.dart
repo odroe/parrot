@@ -16,7 +16,6 @@ class ProgramInterpreter implements Interpreter, InstructionTracer {
 
   @override
   Context enter(Context context, Instruction instruction) {
-    print(instruction.toString());
     return context;
   }
 
@@ -131,11 +130,18 @@ class JustInTimeInvocationDelegate {
         .firstWhere((e) => e.value.symbol == symbol, orElse: () => None());
   }
 
+  void dumpState() {
+    for (var element in _context.snapshot) {
+      print(element);
+    }
+  }
+
   Tuple2<Context, Option<Instruction>> compileAndRun(
-      JustInTimeInvocation invocation) {
+    JustInTimeInvocation invocation,
+  ) {
     return Tuple2(
       _context.snapshot,
-      Some(InvokeNativeFunction((context) => invocation.call(this))),
+      Some(InvokeNativeFunction((_) => invocation.call(this))),
     );
   }
 }
@@ -164,6 +170,11 @@ class ProgramHeader extends Marker {
 
   @override
   final Context? parent;
+
+  @override
+  String toString() {
+    return "ProgramHeader()";
+  }
 }
 
 class FunctionReference extends State {
@@ -173,6 +184,11 @@ class FunctionReference extends State {
   final Context? parent;
 
   final FunctionDeclaration declaration;
+
+  @override
+  String toString() {
+    return "FunctionReference(declaration=${declaration.toString()})";
+  }
 }
 
 class FunctionDeclaration extends State {
@@ -187,6 +203,25 @@ class FunctionDeclaration extends State {
 
   ContextBuilder get reference =>
       (parent) => FunctionReference(this, parent: parent);
+
+  @override
+  String toString() {
+    return "FunctionDeclaration(symbol=${symbol.toString()}, instruction=${instruction.toString()})";
+  }
+}
+
+class CallSite extends State {
+  const CallSite(this.context, {this.parent});
+
+  @override
+  final Context? parent;
+
+  final Context context;
+
+  @override
+  String toString() {
+    return "CallSite(context=${context.toString()})";
+  }
 }
 
 class StackFrame extends Marker {
@@ -194,6 +229,27 @@ class StackFrame extends Marker {
 
   @override
   final Context? parent;
+
+  @override
+  String toString() {
+    return "StackFrame()";
+  }
+}
+
+class Callee extends State {
+  const Callee(this.context, this.instruction, {this.parent});
+
+  @override
+  final Context? parent;
+
+  final Context context;
+
+  final Instruction instruction;
+
+  @override
+  String toString() {
+    return "Callee(context=${context.toString()}, instruction=${instruction.toString()})";
+  }
 }
 
 class Argument extends State {
@@ -225,6 +281,11 @@ class VariableDeclaration extends State {
   final Object symbol;
 
   final Option<Object> value;
+
+  @override
+  String toString() {
+    return "VariableDeclaration(symbol=${symbol.toString()}, value=${value.toString()})";
+  }
 }
 
 class VariableOverride extends State {
@@ -236,6 +297,11 @@ class VariableOverride extends State {
   final Object symbol;
 
   final Option<Object> value;
+
+  @override
+  String toString() {
+    return "VariableOverride(symbol=${symbol.toString()}, value=${value.toString()})";
+  }
 }
 
 class ReturnValue extends Marker {
@@ -250,15 +316,6 @@ class ReturnValue extends Marker {
   String toString() {
     return "ReturnValue(value=${value.toString()})";
   }
-}
-
-class CallSite extends State {
-  const CallSite(this.context, {this.parent});
-
-  @override
-  final Context? parent;
-
-  final Context context;
 }
 
 class Interrupt implements Instruction {
@@ -300,17 +357,20 @@ class InvokeNativeFunction implements Instruction {
     Context context,
     InstructionTracer tracer,
   ) {
-    return Tuple2(_runInIsolatedScope(context.mutable), None());
+    return Tuple2(_runInIsolatedScope(context), None());
   }
 
-  Context _runInIsolatedScope(MutableContext context) {
-    context
+  Context _runInIsolatedScope(Context context) {
+    final currentContext = context.mutable;
+
+    currentContext
         .apply((parent) => CallSite(parent, parent: parent))
-        .apply(_applyCallFrame([]));
+        .apply(_applyCallFrame(context, this, []));
 
-    final result = nativeFunction(context.snapshot);
+    final result = nativeFunction(currentContext.snapshot);
 
-    return context.apply((parent) => ReturnValue(result, parent: parent));
+    return currentContext
+        .apply((parent) => ReturnValue(result, parent: parent));
   }
 
   @override
@@ -331,28 +391,27 @@ class InvokeFunction implements Instruction {
     Context context,
     InstructionTracer tracer,
   ) {
-    return Tuple2(
-      _runInIsolatedScope(context.mutable, tracer),
-      None(),
-    );
+    return Tuple2(_runInIsolatedScope(context, tracer), None());
   }
 
   Context _runInIsolatedScope(
-    MutableContext context,
+    Context context,
     InstructionTracer tracer,
   ) {
-    context
+    final currentContext = context.mutable;
+
+    currentContext
         .apply((parent) => CallSite(parent, parent: parent))
-        .apply(_applyCallFrame(arguments));
+        .apply(_applyCallFrame(context, this, arguments));
 
-    final newContext =
-        runUntilStop(context.snapshot, instruction, tracer).mutable;
+    final switchedContext =
+        runUntilStop(currentContext.snapshot, instruction, tracer).mutable;
 
-    if (!_findReturnValue(newContext).hasValue) {
-      newContext.apply((parent) => ReturnValue(None(), parent: parent));
+    if (!_findReturnValue(switchedContext).hasValue) {
+      switchedContext.apply((parent) => ReturnValue(None(), parent: parent));
     }
 
-    return newContext.snapshot;
+    return switchedContext.snapshot;
   }
 
   Option<ReturnValue> _findReturnValue(Context context) {
@@ -426,6 +485,46 @@ class CompileAndInvokeJustInTimeInvocation implements Instruction {
   }
 }
 
+class WriteRegister implements Instruction {
+  const WriteRegister(this.symbol, this.value);
+
+  final Object symbol;
+
+  final Option<Object> value;
+
+  @override
+  Tuple2<Context, Option<Instruction>> run(
+    Context context,
+    InstructionTracer tracer,
+  ) {
+    return Tuple2(
+      context.mutable.apply((parent) => Register(symbol, value)),
+      None(),
+    );
+  }
+
+  @override
+  String toString() {
+    return "WriteRegister(symbol=${symbol.toString()}, value=${value.toString()})";
+  }
+}
+
+class Register extends State {
+  const Register(this.symbol, this.value, {this.parent});
+
+  @override
+  final Context? parent;
+
+  final Object symbol;
+
+  final Option<Object> value;
+
+  @override
+  String toString() {
+    return "Register(symbol=${symbol.toString()}, value=${value.toString()})";
+  }
+}
+
 class Halt implements Instruction {
   @override
   Tuple2<Context, Option<Instruction>> run(
@@ -441,10 +540,15 @@ class Halt implements Instruction {
   }
 }
 
-ContextBuilder _applyCallFrame(Iterable<Object> arguments) {
+ContextBuilder _applyCallFrame(
+  Context currentContext,
+  Instruction currentInstruction,
+  Iterable<Object> arguments,
+) {
   Context applyCallFrame(Context parent) {
     return Context.compose([
       (parent) => StackFrame(parent: parent),
+      (parent) => Callee(currentContext, currentInstruction, parent: parent),
       (parent) => _applyArguments(arguments)(parent),
     ])(parent);
   }

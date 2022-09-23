@@ -128,25 +128,30 @@ class MutableContext with IterableMixin<Context> implements Context {
 
   Context _context;
 
-  @override
-  Context? get parent => _context.parent;
-
-  Context get latest => _context;
-
-  Context get snapshot => latest;
+  Context get _latest => _context;
 
   @override
-  Iterator<Context> get iterator => latest.iterator;
+  Context? get parent => _latest.parent;
+
+  Context get snapshot => _latest;
+
+  @override
+  Iterator<Context> get iterator => _latest.iterator;
 
   @override
   Context derive(ContextBuilder builder) {
-    return builder.call(latest);
+    return builder.call(_latest);
   }
 
   MutableContext apply(ContextBuilder builder) {
-    _context = latest.derive(builder);
+    _context = _latest.derive(builder);
 
     return this;
+  }
+
+  @override
+  String toString() {
+    return _latest.toString();
   }
 }
 
@@ -221,7 +226,7 @@ class _ContextIterator implements Iterator<Context> {
     // way. In other words, use the latest [Context] (i.e [MutableContext.snapshot])
     // as the start and repeats the old way.
     if (current is MutableContext) {
-      current = current.latest;
+      current = current.snapshot;
     }
 
     if (current.parent == null) {
