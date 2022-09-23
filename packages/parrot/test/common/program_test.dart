@@ -1,6 +1,7 @@
-import 'package:parrot/src/container/v1/internal/helpers/data.dart';
-import 'package:parrot/src/container/v1/internal/helpers/program.dart';
 import 'package:test/scaffolding.dart';
+
+import 'package:parrot/src/common/container.dart';
+import 'package:parrot/src/common/program.dart';
 
 void main() {
   test("should run", () {

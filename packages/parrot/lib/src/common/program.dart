@@ -1,3 +1,4 @@
+import 'container.dart';
 import 'interpreter.dart';
 
 class ProgramInterpreter implements Interpreter, InstructionTracer {
