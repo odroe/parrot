@@ -1,54 +1,33 @@
-import 'container/parrot_container.dart';
-import 'container/parrot_token.dart';
-import 'injector/module_compiler.dart';
-import 'injector/module_context.dart';
-import 'injector/provider_compiler.dart';
-import 'parrot_context.dart';
-import 'utils/typed_symbol.dart';
+import 'instance_definition.dart';
+import 'instance_finder.dart';
+import 'module_definition.dart';
 
-class ParrotApplication implements ParrotContext {
-  const ParrotApplication({
-    required this.context,
-    required this.container,
-  });
+abstract class ApplicationInitiator {
+  /// Returns the application bindings module definition.
+  ModuleDefinition get definition;
 
-  /// Current application container.
-  final ParrotContainer container;
+  /// Sets the application bindings module definition.
+  set definition(ModuleDefinition definition);
+}
 
-  /// Current compiled module context.
-  final ModuleContext context;
+abstract class ParrotApplication extends InstanceFinder {
+  factory ParrotApplication(Object module) = _ParrotApplicationImpl;
 
-  @override
-  Future<T> get<T extends Object>(Type type) => context.get<T>(type);
+  /// The application bindings module.
+  Object get module;
+}
 
-  @override
-  Future<T> resolve<T extends Object>(Type type) => context.resolve<T>(type);
+class _ParrotApplicationImpl
+    implements ParrotApplication, ApplicationInitiator {
+  _ParrotApplicationImpl(this.module);
 
   @override
-  Future<ModuleContext> select(Type module) => context.select(module);
+  final Object module;
 
-  /// Create a new [ParrotApplication] instance.
-  static Future<ParrotApplication> create(Type rootModule) async {
-    // Create a new parrot container.
-    final ParrotContainer container = ParrotContainer();
+  @override
+  late final ModuleDefinition definition;
 
-    // Compile the module.
-    final ModuleContext context =
-        await ModuleCompiler(container).compile(rootModule);
-
-    // Create and returns a new parrot application.
-    final ParrotApplication app = ParrotApplication(
-      context: context,
-      container: container,
-    );
-    container.register(SingletonToken<ParrotApplication>(
-      TypedSymbol.create(ParrotApplication),
-      app,
-    ));
-
-    // Compile all providers.
-    await ProviderCompiler(container).compile();
-
-    return app;
-  }
+  @override
+  InstanceDefinition find(Object identifier, [Object? inquirer]) =>
+      definition.find(identifier, inquirer);
 }
