@@ -1,7 +1,7 @@
 import 'instance_factory.dart';
 
 /// Instance provider.
-abstract class Provider<T> {
+abstract class InstanceProvider<T> {
   /// Instance factory.
   InstanceFactory<T> get factory;
 
@@ -9,12 +9,12 @@ abstract class Provider<T> {
   Object get token;
 }
 
-/// Lazy provider.
+/// Lazy instance provider.
 ///
 /// The provider is lazy load the instance.
-class LazyProvider<T> implements Provider<T> {
-  /// Create a new [LazyProvider] instance.
-  const LazyProvider({
+class LazyInstanceProvider<T> implements InstanceProvider<T> {
+  /// Create a new [LazyInstanceProvider] instance.
+  const LazyInstanceProvider({
     required this.factory,
     required this.token,
   });
@@ -26,12 +26,12 @@ class LazyProvider<T> implements Provider<T> {
   final Object token;
 }
 
-/// Eager provider.
+/// Eager instance provider.
 ///
 /// The provider is eager load the instance.
-class EagerProvider<T> implements Provider<T> {
-  /// Create a new [EagerProvider] instance.
-  const EagerProvider({
+class EagerInstanceProvider<T> implements InstanceProvider<T> {
+  /// Create a new [EagerInstanceProvider] instance.
+  const EagerInstanceProvider({
     required this.factory,
     required this.token,
   });

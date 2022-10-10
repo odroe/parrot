@@ -1,10 +1,10 @@
 import 'instance_wrapper.dart';
-import 'provider.dart';
+import 'instance_provider.dart';
 
 /// Parrot Container.
 ///
 /// The container is manage all instances.
-abstract class ParrotContainer extends Iterable<Provider> {
+abstract class ParrotContainer extends Iterable<InstanceProvider> {
   /// Create a new container.
   factory ParrotContainer() = _ParrotContainerImpl;
 
@@ -12,7 +12,7 @@ abstract class ParrotContainer extends Iterable<Provider> {
   bool has(Object token);
 
   /// Returns a [Provider] instance.
-  Provider<T> getProvider<T>(Object token);
+  InstanceProvider<T> getInstanceProvider<T>(Object token);
 
   /// Returns a [InstanceWrapper] instance.
   Future<InstanceWrapper<T>> getInstanceWrapper<T>(Object token);
@@ -21,24 +21,24 @@ abstract class ParrotContainer extends Iterable<Provider> {
   Future<T> getInstance<T>(Object token);
 
   /// Add a [Provider] instance.
-  Future<void> addProvider<T>(Provider<T> provider);
+  Future<void> addInstanceProvider<T>(InstanceProvider<T> provider);
 
   /// Add a [InstanceWrapper] instance.
   void addInstanceWrapper<T>(InstanceWrapper<T> instanceWrapper);
 }
 
 /// Parrot Container implementation.
-class _ParrotContainerImpl extends Iterable<Provider>
+class _ParrotContainerImpl extends Iterable<InstanceProvider>
     implements ParrotContainer {
   /// Registered providers.
-  final Set<Provider> _providers = {};
+  final Set<InstanceProvider> _providers = {};
 
   /// Reolved instances.
-  final Map<Provider, InstanceWrapper> _instances = {};
+  final Map<InstanceProvider, InstanceWrapper> _instances = {};
 
   @override
   Future<InstanceWrapper<T>> getInstanceWrapper<T>(Object token) async {
-    final Provider<T> provider = getProvider<T>(token);
+    final InstanceProvider<T> provider = getInstanceProvider<T>(token);
 
     if (_instances.containsKey(provider)) {
       return _instances[provider] as InstanceWrapper<T>;
@@ -48,17 +48,18 @@ class _ParrotContainerImpl extends Iterable<Provider>
   }
 
   @override
-  Provider<T> getProvider<T>(Object token) => _providers.firstWhere(
+  InstanceProvider<T> getInstanceProvider<T>(Object token) =>
+      _providers.firstWhere(
         (provider) => provider.token == token,
         orElse: () => throw Exception('Provider not found.'),
-      ) as Provider<T>;
+      ) as InstanceProvider<T>;
 
   @override
   bool has(Object token) =>
-      _providers.any((Provider provider) => provider.token == token);
+      _providers.any((InstanceProvider provider) => provider.token == token);
 
   @override
-  Iterator<Provider> get iterator => _providers.iterator;
+  Iterator<InstanceProvider> get iterator => _providers.iterator;
 
   @override
   void addInstanceWrapper<T>(InstanceWrapper<T> instanceWrapper) {
@@ -67,9 +68,9 @@ class _ParrotContainerImpl extends Iterable<Provider>
   }
 
   @override
-  Future<void> addProvider<T>(Provider<T> provider) async {
+  Future<void> addInstanceProvider<T>(InstanceProvider<T> provider) async {
     /// If the provider is eager, resolve the instance.
-    if (provider is EagerProvider<T>) {
+    if (provider is EagerInstanceProvider<T>) {
       await _getInstanceWrappperByProvider<T>(provider);
     }
 
@@ -77,7 +78,7 @@ class _ParrotContainerImpl extends Iterable<Provider>
   }
 
   /// Only add a provider.
-  void _onlyAddProvider<T>(Provider<T> provider) {
+  void _onlyAddProvider<T>(InstanceProvider<T> provider) {
     if (!_providers.contains(provider)) {
       _providers.add(provider);
     }
@@ -85,7 +86,7 @@ class _ParrotContainerImpl extends Iterable<Provider>
 
   /// Create or get a [InstanceWrapper] with a [Provider].
   Future<InstanceWrapper<T>> _getInstanceWrappperByProvider<T>(
-      Provider<T> provider) async {
+      InstanceProvider<T> provider) async {
     if (_instances.containsKey(provider)) {
       return _instances[provider] as InstanceWrapper<T>;
     }

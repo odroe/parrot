@@ -5,4 +5,4 @@ library parrot.core;
 export 'src/container/parrot_container.dart';
 export 'src/container/instance_wrapper.dart';
 export 'src/container/instance_factory.dart';
-export 'src/container/provider.dart';
+export 'src/container/instance_provider.dart';

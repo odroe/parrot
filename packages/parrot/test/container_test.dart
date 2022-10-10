@@ -9,8 +9,8 @@ void main() {
   });
 
   test('should be able to add a provider', () async {
-    container.addProvider(
-      LazyProvider(
+    container.addInstanceProvider(
+      LazyInstanceProvider(
         token: 'token',
         factory: (container) async => 'instance',
       ),
@@ -20,21 +20,21 @@ void main() {
   });
 
   test('should be able to get a provider', () async {
-    container.addProvider(
-      LazyProvider(
+    container.addInstanceProvider(
+      LazyInstanceProvider(
         token: 'token',
         factory: (container) async => 'instance',
       ),
     );
 
-    final provider = container.getProvider<String>('token');
+    final provider = container.getInstanceProvider<String>('token');
 
     expect(provider.token, 'token');
   });
 
   test('should be able to get a instance', () async {
-    container.addProvider(
-      LazyProvider(
+    container.addInstanceProvider(
+      LazyInstanceProvider(
         token: 'token',
         factory: (container) async => 'instance',
       ),
@@ -46,8 +46,8 @@ void main() {
   });
 
   test('should be able to get a instance with a eager provider', () async {
-    await container.addProvider(
-      EagerProvider(
+    await container.addInstanceProvider(
+      EagerInstanceProvider(
         token: 'token',
         factory: (container) async => 'instance',
       ),
