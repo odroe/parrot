@@ -130,20 +130,18 @@ mixin ModuleCompiler on Compiler {
     await compileModuleContext(module, context);
 
     // Create override module metadata.
-    final ModuleMetadata? override = await module.overrideMetadata(context);
-
-    // Resolve module metadata.
-    final ModuleMetadata metadata = override ?? module;
+    final ModuleMetadata override = await module.overrideMetadata(context);
 
     // Resolve module origin metadata.
-    final ModuleMetadata original = await _resolveModuleMetadata(module.module);
+    final ModuleMetadata original =
+        await _resolveModuleMetadata(module.module, parent);
 
     // Create resolved module metadata.
     return ModuleMetadata(
-      dependencies: {...original.dependencies, ...metadata.dependencies},
-      providers: {...original.providers, ...metadata.providers},
-      exports: {...original.exports, ...metadata.exports},
-      global: metadata.global || original.global,
+      dependencies: {...original.dependencies, ...override.dependencies},
+      providers: {...original.providers, ...override.providers},
+      exports: {...original.exports, ...override.exports},
+      global: override.global || original.global,
     );
   }
 

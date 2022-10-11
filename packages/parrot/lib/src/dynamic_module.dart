@@ -8,5 +8,5 @@ abstract class DynamicModule extends ModuleMetadata {
   Type get module;
 
   /// Override dynamic module metadata.
-  Future<ModuleMetadata?> overrideMetadata(ModuleRef ref) async => null;
+  Future<ModuleMetadata> overrideMetadata(ModuleRef ref) async => this;
 }
