@@ -76,6 +76,9 @@ mixin ModuleCompiler on Compiler {
     final InstanceContext<T> instanceContext =
         await compileProvider<T>(classProvider, context);
 
+    // Remove class provider.
+    container.remove(context);
+
     // Return instance factory.
     return instanceContext.factory;
   }

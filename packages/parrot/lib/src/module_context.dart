@@ -54,7 +54,7 @@ class ModuleContext<T> implements ModuleRef, InstanceContext<T> {
         findExportedProvider<S>(provider);
 
     // If context is not null, return it.
-    if (context != null) return _container.getInstance(context.token);
+    if (context != null) return _container.getInstance<S>(context.token);
 
     // Throw error.
     throw StateError('Provider not found: $provider');

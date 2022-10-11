@@ -20,6 +20,9 @@ abstract class ParrotContainer extends Iterable<InstanceContext> {
   /// Returns a instance.
   Future<T> getInstance<T>(Object token);
 
+  /// Remove a instance and context.
+  void remove(Object token);
+
   /// Add a [Provider] instance.
   void addInstanceContext<T>(InstanceContext<T> context);
 
@@ -100,5 +103,11 @@ class _ParrotContainerImpl extends Iterable<InstanceContext>
     final InstanceWrapper<T> instanceWrapper =
         await getInstanceWrapper<T>(token);
     return instanceWrapper.instance;
+  }
+
+  @override
+  void remove(Object token) {
+    _contexts.removeWhere((element) => element.equal(token));
+    _instances.removeWhere((key, value) => key.equal(token));
   }
 }

@@ -1,5 +1,3 @@
-import 'module_ref.dart';
-
 /// Basic provider.
 abstract class Provider {
   Provider({required this.token});
