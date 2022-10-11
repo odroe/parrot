@@ -10,6 +10,10 @@ class ParrotService {
   final HelloService hello;
 
   const ParrotService.hello(this.hello);
+
+  void say() {
+    print('🦜 ${hello.word} Parrot!');
+  }
 }
 
 @Module(
@@ -28,5 +32,5 @@ void main() async {
 
   final ParrotService service = await app.find(ParrotService);
 
-  print(service.hello.word);
+  service.say();
 }

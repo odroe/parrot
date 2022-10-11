@@ -95,7 +95,7 @@ class ModuleContext<T> implements ModuleRef, InstanceContext<T> {
   /// Find definition provider.
   InstanceContext<S>? findDefinitionProvider<S>(Object provider) {
     // If provider is self, return self.
-    if (equal(provider)) return this as InstanceContext<S>;
+    if (equal(provider)) return cast<S>();
 
     for (final Object definition in metadata.providers) {
       if (definition == provider ||
@@ -116,7 +116,7 @@ class ModuleContext<T> implements ModuleRef, InstanceContext<T> {
         .where((element) => element.metadata.global);
 
     for (final ModuleContext context in globalModules) {
-      if (context.equal(module)) return context as ModuleContext<S>;
+      if (context.equal(module)) return context.cast<S>();
     }
 
     return null;
@@ -125,7 +125,7 @@ class ModuleContext<T> implements ModuleRef, InstanceContext<T> {
   /// Select dependency module.
   ModuleContext<S>? selectDependencyModule<S>(Object module) {
     // If token is self, return self.
-    if (equal(module)) return this as ModuleContext<S>;
+    if (equal(module)) return cast<S>();
 
     for (final Object dependency in metadata.dependencies) {
       if (_container.has(dependency)) {
@@ -139,7 +139,7 @@ class ModuleContext<T> implements ModuleRef, InstanceContext<T> {
             context.selectDependencyModule(module);
 
         // If module context is not null, return it.
-        if (moduleContext != null) return moduleContext as ModuleContext<S>;
+        if (moduleContext != null) return moduleContext.cast<S>();
       }
     }
 
