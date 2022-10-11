@@ -18,6 +18,9 @@ abstract class InstanceContext<T> {
 
   /// Add a alias.
   void addAlias(Object alias);
+
+  /// Cast to [InstanceContext<S>].
+  InstanceContext<S> cast<S>();
 }
 
 /// Instance context implementation.
@@ -43,5 +46,27 @@ class _InstanceContextImpl<T> implements InstanceContext<T> {
     if (!aliases.contains(alias)) {
       aliases.add(alias);
     }
+  }
+
+  @override
+  InstanceContext<S> cast<S>() {
+    if (this is InstanceContext<S>) {
+      return this as InstanceContext<S>;
+    }
+
+    final InstanceContext<S> context = InstanceContext<S>(
+      token: token,
+      factory: () async {
+        final T instance = await factory();
+
+        return instance as S;
+      },
+    );
+
+    for (final Object alias in aliases) {
+      context.addAlias(alias);
+    }
+
+    return context;
   }
 }

@@ -19,6 +19,7 @@ mixin ModuleCompiler on Compiler {
       metadata: await _resolveModuleMetadata(module, parent),
       token: moduleToken,
       parent: parent,
+      container: container,
     );
 
     // Save module context to container.
@@ -122,6 +123,7 @@ mixin ModuleCompiler on Compiler {
       metadata: module,
       token: module,
       parent: parent,
+      container: container,
     );
 
     // Compile module context.

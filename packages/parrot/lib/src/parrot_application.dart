@@ -1,8 +1,9 @@
+import 'module_ref.dart';
 import 'parrot_compiler.dart';
 import 'container/parrot_container.dart';
 
 /// Parrot application.
-abstract class ParrotApplication {
+abstract class ParrotApplication implements ModuleRef {
   /// Create a new application.
   factory ParrotApplication(Object module) = _ParrotApplicationImpl;
 
@@ -39,4 +40,11 @@ class _ParrotApplicationImpl implements ParrotApplication {
 
     await compiler.compileModule(module);
   }
+
+  @override
+  Future<T> find<T>(Object token) => select(module).find<T>(token);
+
+  @override
+  ModuleRef select(Object token) =>
+      container.getInstanceContext(token) as ModuleRef;
 }

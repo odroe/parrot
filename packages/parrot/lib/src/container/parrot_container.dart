@@ -48,15 +48,17 @@ class _ParrotContainerImpl extends Iterable<InstanceContext>
   }
 
   @override
-  InstanceContext<T> getInstanceContext<T>(Object token) =>
-      _contexts.firstWhere(
+  InstanceContext<T> getInstanceContext<T>(Object token) => _contexts
+      .firstWhere(
         (context) => context.equal(token),
         orElse: () => throw Exception('The $token is not found.'),
-      ) as InstanceContext<T>;
+      )
+      .cast<T>();
 
   @override
-  bool has(Object token) =>
-      _contexts.any((InstanceContext context) => context.equal(token));
+  bool has(Object token) => _contexts.any((InstanceContext context) {
+        return context.equal(token);
+      });
 
   @override
   Iterator<InstanceContext> get iterator => _contexts.iterator;
@@ -71,6 +73,7 @@ class _ParrotContainerImpl extends Iterable<InstanceContext>
   @override
   void addInstanceContext<T>(InstanceContext<T> context) async {
     if (!_contexts.contains(context)) {
+      // print(context.token);
       _contexts.add(context);
     }
   }

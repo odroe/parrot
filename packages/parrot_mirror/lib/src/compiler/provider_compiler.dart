@@ -53,11 +53,9 @@ extension on ProviderCompiler {
     required Iterable<ParameterMirror> parameters,
     required ModuleContext context,
   }) async {
-    final Iterator<ParameterMirror> iterator = parameters.iterator;
     final Map<ParameterMirror, InstanceContext> resolvedParameters = {};
 
-    do {
-      final ParameterMirror parameter = iterator.current;
+    for (final ParameterMirror parameter in parameters) {
       InstanceContext? instanceContext = await createParameterContext(
         parameter: parameter,
         context: context,
@@ -80,7 +78,7 @@ extension on ProviderCompiler {
       }
 
       resolvedParameters[parameter] = instanceContext;
-    } while (iterator.moveNext());
+    }
 
     return resolvedParameters;
   }
@@ -224,7 +222,7 @@ extension on ProviderCompiler {
           .map((e) => MapEntry(e.key.simpleName, e.value)),
     );
     final InstanceContext<T> factoryContext = InstanceContext<T>(
-      token: closureMirror,
+      token: token,
       factory: () async {
         // Resolve positional parameters values.
         final List positionalParametersValues = await Future.wait(

@@ -1,8 +1,0 @@
-name: parrot_01_inject
-environment:
-  sdk: '>=2.10.0 <3.0.0'
-dependencies:
-  parrot: ^0.0.1
-dependency_overrides:
-  parrot:
-    path: ../../packages/parrot
