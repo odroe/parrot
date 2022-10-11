@@ -1,6 +1,7 @@
 name: parrot_mirror
-description: A starting point for Dart libraries or applications.
+description: Parrot modular compiler that uses `dart:mirrors` for content parsing and context into containers.
 version: 1.0.0
+repository: https://github.com/odroe/parrot
 # homepage: https://www.example.com
 
 environment:
