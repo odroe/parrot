@@ -1,4 +1,4 @@
-import 'instance_provider.dart';
+import 'instance_context.dart';
 
 /// Instance Wrapper.
 ///
@@ -6,12 +6,12 @@ import 'instance_provider.dart';
 abstract class InstanceWrapper<T> {
   /// Create a new [InstanceWrapper] instance.
   factory InstanceWrapper({
-    required InstanceProvider<T> provider,
+    required InstanceContext<T> context,
     required T instance,
   }) = _InstanceWrapper<T>;
 
-  /// Instance provider.
-  InstanceProvider get provider;
+  /// Instance context.
+  InstanceContext get context;
 
   /// Instance value.
   T get instance;
@@ -20,13 +20,13 @@ abstract class InstanceWrapper<T> {
 /// Instance wrapper implementation.
 class _InstanceWrapper<T> implements InstanceWrapper<T> {
   @override
-  final InstanceProvider<T> provider;
+  final InstanceContext<T> context;
 
   @override
   final T instance;
 
   const _InstanceWrapper({
-    required this.provider,
+    required this.context,
     required this.instance,
   });
 }

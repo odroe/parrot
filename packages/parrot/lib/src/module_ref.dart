@@ -1,6 +1,8 @@
 abstract class ModuleRef {
-  /// Select a module.
+  /// Select other modules or global modules in the current module scope.
   Future<ModuleRef> select(Object token);
 
-  /// Find a module provider.
+  /// Finds a provider instance for the current module scope or a provider
+  /// instance for a global module.
+  Future<T> find<T>(Object token);
 }

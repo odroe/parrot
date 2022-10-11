@@ -1,18 +1,18 @@
 import 'instance_wrapper.dart';
-import 'instance_provider.dart';
+import 'instance_context.dart';
 
 /// Parrot Container.
 ///
 /// The container is manage all instances.
-abstract class ParrotContainer extends Iterable<InstanceProvider> {
+abstract class ParrotContainer extends Iterable<InstanceContext> {
   /// Create a new container.
   factory ParrotContainer() = _ParrotContainerImpl;
 
   /// Check a instance is registered.
   bool has(Object token);
 
-  /// Returns a [Provider] instance.
-  InstanceProvider<T> getInstanceProvider<T>(Object token);
+  /// Returns a [InstanceContext] instance.
+  InstanceContext<T> getInstanceContext<T>(Object token);
 
   /// Returns a [InstanceWrapper] instance.
   Future<InstanceWrapper<T>> getInstanceWrapper<T>(Object token);
@@ -21,83 +21,74 @@ abstract class ParrotContainer extends Iterable<InstanceProvider> {
   Future<T> getInstance<T>(Object token);
 
   /// Add a [Provider] instance.
-  Future<void> addInstanceProvider<T>(InstanceProvider<T> provider);
+  void addInstanceContext<T>(InstanceContext<T> context);
 
   /// Add a [InstanceWrapper] instance.
   void addInstanceWrapper<T>(InstanceWrapper<T> instanceWrapper);
 }
 
 /// Parrot Container implementation.
-class _ParrotContainerImpl extends Iterable<InstanceProvider>
+class _ParrotContainerImpl extends Iterable<InstanceContext>
     implements ParrotContainer {
   /// Registered providers.
-  final Set<InstanceProvider> _providers = {};
+  final Set<InstanceContext> _contexts = {};
 
   /// Reolved instances.
-  final Map<InstanceProvider, InstanceWrapper> _instances = {};
+  final Map<InstanceContext, InstanceWrapper> _instances = {};
 
   @override
   Future<InstanceWrapper<T>> getInstanceWrapper<T>(Object token) async {
-    final InstanceProvider<T> provider = getInstanceProvider<T>(token);
+    final InstanceContext<T> context = getInstanceContext<T>(token);
 
-    if (_instances.containsKey(provider)) {
-      return _instances[provider] as InstanceWrapper<T>;
+    if (_instances.containsKey(context)) {
+      return _instances[context] as InstanceWrapper<T>;
     }
 
-    return _getInstanceWrappperByProvider<T>(provider);
+    return _getInstanceWrappperByContext<T>(context);
   }
 
   @override
-  InstanceProvider<T> getInstanceProvider<T>(Object token) =>
-      _providers.firstWhere(
-        (provider) => provider.token == token,
-        orElse: () => throw Exception('Provider not found.'),
-      ) as InstanceProvider<T>;
+  InstanceContext<T> getInstanceContext<T>(Object token) =>
+      _contexts.firstWhere(
+        (context) => context.equal(token),
+        orElse: () => throw Exception('The $token is not found.'),
+      ) as InstanceContext<T>;
 
   @override
   bool has(Object token) =>
-      _providers.any((InstanceProvider provider) => provider.token == token);
+      _contexts.any((InstanceContext context) => context.equal(token));
 
   @override
-  Iterator<InstanceProvider> get iterator => _providers.iterator;
+  Iterator<InstanceContext> get iterator => _contexts.iterator;
 
   @override
   void addInstanceWrapper<T>(InstanceWrapper<T> instanceWrapper) {
-    _instances.putIfAbsent(instanceWrapper.provider, () => instanceWrapper);
-    _onlyAddProvider(instanceWrapper.provider);
+    _instances[instanceWrapper.context] = instanceWrapper;
+
+    addInstanceContext(instanceWrapper.context);
   }
 
   @override
-  Future<void> addInstanceProvider<T>(InstanceProvider<T> provider) async {
-    /// If the provider is eager, resolve the instance.
-    if (provider is EagerInstanceProvider<T>) {
-      await _getInstanceWrappperByProvider<T>(provider);
-    }
-
-    _onlyAddProvider(provider);
-  }
-
-  /// Only add a provider.
-  void _onlyAddProvider<T>(InstanceProvider<T> provider) {
-    if (!_providers.contains(provider)) {
-      _providers.add(provider);
+  void addInstanceContext<T>(InstanceContext<T> context) async {
+    if (!_contexts.contains(context)) {
+      _contexts.add(context);
     }
   }
 
   /// Create or get a [InstanceWrapper] with a [Provider].
-  Future<InstanceWrapper<T>> _getInstanceWrappperByProvider<T>(
-      InstanceProvider<T> provider) async {
-    if (_instances.containsKey(provider)) {
-      return _instances[provider] as InstanceWrapper<T>;
+  Future<InstanceWrapper<T>> _getInstanceWrappperByContext<T>(
+      InstanceContext<T> context) async {
+    if (_instances.containsKey(context)) {
+      return _instances[context] as InstanceWrapper<T>;
     }
 
-    final T instance = await provider.factory(this);
+    final T instance = await context.factory();
     final InstanceWrapper<T> instanceWrapper = InstanceWrapper<T>(
-      provider: provider,
+      context: context,
       instance: instance,
     );
 
-    return _instances.putIfAbsent(provider, () => instanceWrapper)
+    return _instances.putIfAbsent(context, () => instanceWrapper)
         as InstanceWrapper<T>;
   }
 
