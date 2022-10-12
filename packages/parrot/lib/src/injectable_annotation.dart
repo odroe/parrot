@@ -27,9 +27,7 @@ class Injectable {
 
 /// Inject annotation.
 class Inject {
-  const Inject({
-    this.token,
-  });
+  const Inject(this.token);
 
   /// The injectable class token.
   ///

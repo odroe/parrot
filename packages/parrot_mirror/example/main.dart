@@ -1,26 +1,21 @@
 import 'package:parrot/parrot.dart';
 import 'package:parrot_mirror/parrot_mirror.dart';
 
-class HelloService {
-  String get word => 'Hello';
-}
+String hello() => 'Hello';
 
 @Injectable(factory: ParrotService.hello)
 class ParrotService {
-  final HelloService hello;
+  final String text;
 
-  const ParrotService.hello(this.hello);
+  const ParrotService.hello(@Inject(hello) this.text);
 
   void say() {
-    print('🦜 ${hello.word} Parrot!');
+    print('🦜 $text Parrot!');
   }
 }
 
 @Module(
-  providers: {
-    HelloService,
-    ParrotService,
-  },
+  providers: {hello, ParrotService},
 )
 class AppModule {}
 
