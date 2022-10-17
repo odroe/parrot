@@ -1,11 +1,17 @@
 library parrot.core.app;
 
+import '_internal/modular_tracker.dart';
+import '_internal/module_container.dart';
+import 'exception.dart';
 import 'modular.dart';
 
 part '_internal/parrot_impl.dart';
 
 /// Parrot Application.
 abstract class Parrot {
+  /// Create a new [Parrot] application.
+  factory Parrot(Module module) => _ParrotApplicationImpl(module);
+
   /// Select a module reference.
   ModuleRef select(Module module);
 
