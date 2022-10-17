@@ -27,10 +27,10 @@ class _ParrotApplicationImpl implements Parrot {
   final ModularTracker tracker;
 
   @override
-  Future<T> find<T>(Provider<T> provider) async => tracker(provider);
+  ModuleRef get ref => tracker;
 
   @override
-  Future<T> findNamed<T>(Object name) async => tracker.named(name);
+  Future<T> find<T>(Provider<T> provider) async => ref(provider);
 
   @override
   ModuleRef select(Module module) {
@@ -40,19 +40,6 @@ class _ParrotApplicationImpl implements Parrot {
     // Returns the [ModularTracker] in module container.
     // If the module is not found, throws a [ParrotModuleNotFoundException].
     return tracker.container.get(module);
-  }
-
-  @override
-  Future<T> resolveNamed<T>(Object name) {
-    final Provider<T>? provider = tracker.resolveNamedProvider<T>(name);
-
-    // If the provider is not found, throws a [ParrotNamedProviderNotFoundException].
-    if (provider == null) {
-      throw ParrotNamedProviderNotFoundException(name, tracker.module);
-    }
-
-    // Call the provider.
-    return resolve(provider);
   }
 
   @override
