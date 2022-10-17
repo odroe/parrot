@@ -1,8 +1,4 @@
-library parrot.core.modular;
-
 import 'dart:async';
-
-part '_internal/module_impl.dart';
 
 /// Module provider.
 ///
@@ -39,20 +35,20 @@ abstract class ModuleRef {
 }
 
 /// Module definition.
-abstract class Module {
-  /// Creates a new [Module] instance.
-  factory Module({
-    Set<Module> imports,
-    Set<Provider> providers,
-    Set<Object> exports,
-  }) = _ModuleImpl;
+class Module {
+  /// Create a new [Module] definition instance.
+  const Module({
+    this.providers = const {},
+    this.imports = const {},
+    this.exports = const {},
+  });
 
   /// Imported modules.
-  Set<Module> get imports;
+  final Set<Module> imports;
 
   /// The module providers.
-  Set<Provider> get providers;
+  final Set<Provider> providers;
 
   /// Exported modules or providers.
-  Set<Object> get exports;
+  final Set<Object> exports;
 }
