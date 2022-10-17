@@ -1,6 +1,6 @@
 /// Parrot core.
 library parrot.core;
 
-export 'new/exception.dart';
-export 'new/modular.dart';
-export 'new/parrot.dart';
+export 'src/exception.dart';
+export 'src/modular.dart';
+export 'src/parrot.dart';
