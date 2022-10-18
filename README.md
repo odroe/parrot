@@ -46,7 +46,7 @@ void main() async {
 
 This example will print `Hello Parrot` into the console.
 
-You're thinking, 'Isn't this complicating something simple? `, yes, it does in this hello example.
+You're thinking, `Isn't this complicating something simple?`, yes, it does in this hello example.
 
 But when you have a complex application, you will find that Parrot is very useful. 
 
