@@ -1,4 +1,4 @@
-name: Analyze
+name: analyze
 on: [push, pull_request]
 jobs:
   analyze:
@@ -7,7 +7,6 @@ jobs:
       matrix:
         package:
           - parrot
-          - parrot_shelf
     steps:
       - name: Checkout
         uses: actions/checkout@v3
