@@ -4,6 +4,7 @@ import 'dart:async';
 
 import '_internal/modular_tracker.dart';
 import '_internal/module_container.dart';
+import '_internal/module_effect_call.dart';
 import 'exception.dart';
 import 'modular.dart';
 
@@ -15,10 +16,10 @@ abstract class Parrot {
   factory Parrot(Module module) => _ParrotApplicationImpl(module);
 
   /// Root module reference.
-  ModuleRef get ref;
+  FutureOr<ModuleRef> get ref;
 
   /// Select a module reference.
-  ModuleRef select(Module module);
+  FutureOr<ModuleRef> select(Module module);
 
   /// Find an instance of a [Provider]
   ///

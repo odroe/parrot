@@ -3,7 +3,7 @@ part of parrot.core.app;
 /// Parrot Application implementation.
 class _ParrotApplicationImpl implements Parrot {
   /// Creates a new [_ParrotApplicationImpl] instance.
-  const _ParrotApplicationImpl._internal(this.tracker);
+  const _ParrotApplicationImpl._internal(this._call);
 
   /// Create a new [_ParrotApplicationImpl] instance
   ///
@@ -19,21 +19,28 @@ class _ParrotApplicationImpl implements Parrot {
       container: container,
     );
 
+    // Create module effect call.
+    final ModuleEffectCall call = ModuleEffectCall(tracker);
+
     // Create and return a new application.
-    return _ParrotApplicationImpl._internal(tracker);
+    return _ParrotApplicationImpl._internal(call);
   }
 
-  /// Root module tracker.
-  final ModularTracker tracker;
+  final ModuleEffectCall _call;
+
+  /// Returns the modular tracker.
+  FutureOr<ModularTracker> get _tracker async => _call();
 
   @override
-  ModuleRef get ref => tracker;
+  FutureOr<ModuleRef> get ref => _tracker;
 
   @override
-  Future<T> find<T>(Provider<T> provider) async => ref(provider);
+  Future<T> find<T>(Provider<T> provider) async => (await ref).call(provider);
 
   @override
-  ModuleRef select(Module module) {
+  Future<ModuleRef> select(Module module) async {
+    final ModularTracker tracker = await _tracker;
+
     // If the module is same as current module, return the current tracker.
     if (module == tracker.module) return tracker;
 
@@ -44,6 +51,7 @@ class _ParrotApplicationImpl implements Parrot {
 
   @override
   Future<T> resolve<T>(Provider<T> provider) async {
+    final ModularTracker tracker = await _tracker;
     final Module? selected = _findModuleThatDefinedProvider(tracker, provider);
 
     // If the module is not found, throws a [ParrotProviderNotFoundException].
