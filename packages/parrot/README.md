@@ -30,7 +30,7 @@ We have several examples [on the website](https://parrot.odroe.com/examples). Hr
 ```dart
 import 'package:parrot/parrot.dart';
 
-name() => 'Parrot';
+name(ref) => 'Parrot';
 hello(ref) => 'Hello ${ref(name)}';
 
 final root = Module(

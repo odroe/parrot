@@ -1,22 +1,14 @@
 import 'package:parrot/parrot.dart';
 
-String hello(ref) => 'Hello';
-String world(ref) => 'Parrot';
+name(ref) => 'Parrot';
+hello(ref) => 'Hello ${ref(name)}';
 
-// Create a say provider.
-void Function() say(ModuleRef ref) =>
-    () => print('${ref(hello)}, ${ref(world)}!');
-
-// Define a root module.
 final root = Module(
-  providers: {hello, world, say},
+  providers: {name, hello},
 );
 
-void main(List<String> args) async {
-  // Create a new parrot application.
+void main() async {
   final app = Parrot(root);
 
-  final sayCall = await app.resolve(say);
-
-  sayCall(); // Hello, Parrot!
+  print(await app.resolve(hello));
 }
