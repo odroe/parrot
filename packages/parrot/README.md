@@ -1,66 +1,63 @@
-<h1 align="center">🦜 Parrot</h1>
+# 🦜 [Parrot](https://parrot.odroe.com) ・ [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot)
 
-A progressive [Dart](https://dart.dev) framework for building **efficient**, **reliable** and **scalable** server-side applications.
+Parrot is a Dart framework for building applications.
 
-[![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot)
-[![License](https://img.shields.io/badge/license-BSD%203--Clause-blue.svg)](LICENSE)
+- **Declarative**: Parrot makes it easy to create instance dependencies. Design simple providers for each instance in your application, and when your instance needs to depend on another instance, Parrot will effectively provide the reference. declarative instances make your code more predictable and easier to debug.
+- **Modular**: Modular design makes it easy to manage your application. Parrot provides a simple and effective modular architecture, you can easily combine instances into a functional module, which can be easily used in other modules.
+- **Flexible**: Parrot is a framework that can be used in any Dart project. You can use Parrot to build a simple command-line application, or you can use it to build a complex web application. Parrot is flexible and can be used in any Dart project.
 
-## What is Parrot?
+👉 [Learn how to use Parrot in your project](https://parrot.odroe.com/getting-started)
 
-Parrot is a Dart framework for building server-side applications. It is designed to be modular and maintainable.
+## Installation
 
-In the Parrot core container, we use the DIP (Dependency Inversion Principle) design and agree on the way modules are composed.
+Add the following to your `pubspec.yaml` file:
 
-> **NOTE**: Parrot uses `dart:mirrors` to parse annotations and put the processed results into a container.
-
-## Getting Started
-
-Create a simple module:
-
-```dart
-import 'package:parrot/parrot.dart';
-
-@Injectable()
-class SimpleService {
-  void say() {
-    print('Hello, 🦜 Parrot!');
-  }
-}
-
-@Module(
-  providers: [SimpleService],
-)
-class SimpleModule {}
+```yaml
+dependencies:
+  parrot: latest
 ```
 
-Next, create an application module:
+# Documentation
 
-```dart
-import 'package:parrot/parrot.dart';
+You can find the Parrot documentation [on the website](https://parrot.odroe.com).
 
-@Module(
-  dependencies: [SimpleModule],
-)
-class AppModule {}
-```
-
-Finally, create an application:
-
-```dart
-import 'package:parrot/parrot.dart';
-
-void main() async {
-  final app = await ParrotApplication.create(AppModule);
-  final SimpleService simple = app.resolve(SimpleService);
-
-  simple.say(); // Hello, 🦜 Parrot!
-}
-```
-
-## Documentation
-
-Read the [documentation](https://parrot.odroe.com) for more information.
+> If you find any errors in the documentation, please [create an issue](https://github.com/odroe/parrot/issues/new) or [sending a pull request](https://github.com/odroe/parrot/pulls) to help us improve it.
 
 ## Examples
 
-For more examples please visit 👉 [examples](https://github.com/odroe/parrot/tree/main/examples)
+We have several examples [on the website](https://parrot.odroe.com/examples). Hre is one of the most popular examples to get you started:
+
+```dart
+import 'package:parrot/parrot.dart';
+
+name() => 'Parrot';
+hello(ref) => 'Hello ${ref(name)}';
+
+final root = Module(
+  providers: { name, hello },
+);
+
+void main() async {
+  final app = Parrot(root);
+  
+  print(await app.resolve(hello));
+}
+```
+
+This example will print `Hello Parrot` into the console.
+
+You're thinking, 'Isn't this complicating something simple? `, yes, it does in this hello example.
+
+But when you have a complex application, you will find that Parrot is very useful. 
+
+## Contributing
+
+We welcome contributions to Parrot. Please read our [contributing guide](contributing.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Parrot.
+
+## Code of Conduct
+
+Parrot has adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](code_of_conduct.md) so that you can understand what actions will and will not be tolerated.
+
+## Community
+
+You can find Parrot community and join us [on the website](https://parrot.odroe.com/community), or follow our Twitter account [@odroeinc](https://twitter.com/odroeinc) to see our events.

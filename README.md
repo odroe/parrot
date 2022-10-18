@@ -1,54 +1,63 @@
-<h1 align="center">🦜 Parrot</h1>
+# 🦜 [Parrot](https://parrot.odroe.com) ・ [![License](https://img.shields.io/github/license/odroe/parrot?label=License)](LICENSE)
 
-A progressive [Dart](https://dart.dev) framework for building **efficient**, **reliable** and **scalable** server-side applications.
+Parrot is a Dart framework for building applications.
 
-[![Parrot Analyze](https://github.com/odroe/parrot/actions/workflows/analyze.yaml/badge.svg)](https://github.com/odroe/parrot/actions/workflows/analyze.yaml)
-[![Parrot Test](https://github.com/odroe/parrot/actions/workflows/test.yaml/badge.svg)](https://github.com/odroe/parrot/actions/workflows/test.yaml)
-[![codecov](https://codecov.io/github/odroe/parrot/branch/main/graph/badge.svg)](https://codecov.io/github/odroe/parrot)
-[![Parrot license](https://img.shields.io/github/license/odroe/parrot)](LICENSE)
+- **Declarative**: Parrot makes it easy to create instance dependencies. Design simple providers for each instance in your application, and when your instance needs to depend on another instance, Parrot will effectively provide the reference. declarative instances make your code more predictable and easier to debug.
+- **Modular**: Modular design makes it easy to manage your application. Parrot provides a simple and effective modular architecture, you can easily combine instances into a functional module, which can be easily used in other modules.
+- **Flexible**: Parrot is a framework that can be used in any Dart project. You can use Parrot to build a simple command-line application, or you can use it to build a complex web application. Parrot is flexible and can be used in any Dart project.
 
+👉 [Learn how to use Parrot in your project](https://parrot.odroe.com/getting-started)
 
-## What is Parrot?
+## Installation
 
-Parrot is a Dart framework for building server-side applications. It is designed to be modular and maintainable.
+Add the following to your `pubspec.yaml` file:
 
-In the Parrot core container, we use the DIP (Dependency Inversion Principle) design and agree on the way modules are composed.
+```yaml
+dependencies:
+  parrot: latest
+```
 
-> **NOTE**: Parrot uses `dart:mirrors` to parse annotations and put the processed results into a container.
+# Documentation
 
-## Philosophy
+You can find the Parrot documentation [on the website](https://parrot.odroe.com).
 
-The [Dart language](https://dart.dev) has become more and more perfect under the birth of [Flutter](https://flutter.dev). Even if Google develops the features of Dart around Flutter, it does not mean that Dart cannot achieve achievements in other fields.
+> If you find any errors in the documentation, please [create an issue](https://github.com/odroe/parrot/issues/new) or [sending a pull request](https://github.com/odroe/parrot/pulls) to help us improve it.
 
-Dart as a server-side development language is not without cases, such as [dart.dev](https://dart.dev) and [pub.dev](https://pub.dev). Obviously, dart.dev is a static website, while pub.dev is developed using Firebase.
+## Examples
 
-The emergence of Parrot is not a flash in the pan, but has been planned for a long time! For the development of Dart server-side applications, Dart has introduced [shelf](https://pub.dev/packages/shelf) and [googleapis](https://pub.dev/packages/googleapis), which is obviously insufficient. The [Angel framework](https://github.com/dukefirehawk/angel) that emerged in the community is a bold attempt. Under the birth of the Flutter ecosystem, a lot of toolkits based on Sourcegen or Codegen have been created, but none of them have solved the main problem - **The architecture**
+We have several examples [on the website](https://parrot.odroe.com/examples). Hre is one of the most popular examples to get you started:
 
-Parrot is designed to provide an out-of-the-box application architecture that allows for the easy creation of highly testable, extensible, loosely coupled, and easily maintainable applications. The architecture is heavily inspired by [Nest.js](https://github.com/nestjs/nest).
+```dart
+import 'package:parrot/parrot.dart';
 
-## Ecosystem
+name() => 'Parrot';
+hello(ref) => 'Hello ${ref(name)}';
 
-| Package | Version | Description |
-| ------- | ----------- | ------- |
-| [parrot](https://pub.dev/packages/parrot) | [![pub package](https://img.shields.io/pub/v/parrot.svg)](https://pub.dev/packages/parrot) | Parrot core, Architecture and Dependency Injection Principles |
-| [parrot_shelf](https://pub.dev/packages/parrot_shelf) | [![pub package](https://img.shields.io/pub/v/parrot_shelf.svg)](https://pub.dev/packages/parrot_shelf) | Parrot adapter for [shelf](https://pub.dev/packages/shelf), For developing HTTP APIs or static website. |
+final root = Module(
+  providers: { name, hello },
+);
 
+void main() async {
+  final app = Parrot(root);
+  
+  print(await app.resolve(hello));
+}
+```
 
-## Getting Started
+This example will print `Hello Parrot` into the console.
 
-TODO
+You're thinking, 'Isn't this complicating something simple? `, yes, it does in this hello example.
 
-## Questions
+But when you have a complex application, you will find that Parrot is very useful. 
 
-If you have any questions, please feel free to ask in the [Discussions](https://github.com/odroe/parrot/discussions) section.
+## Contributing
 
-> **NOTE**: Please do not ask questions in the issue section, Issues are for bug reports and feature requests only.
+We welcome contributions to Parrot. Please read our [contributing guide](contributing.md) to learn about our development process, how to propose bugfixes and improvements, and how to build and test your changes to Parrot.
 
-## Stay in touch
+## Code of Conduct
 
-- Website - [https://parrot.odroe.com](https://parrot.odroe.com)
-- Twitter - [@odroeinc](https://twitter.com/odroeinc)
+Parrot has adopted a Code of Conduct that we expect project participants to adhere to. Please read the [full text](code_of_conduct.md) so that you can understand what actions will and will not be tolerated.
 
-## License
+## Community
 
-Parrot is [BSD 3-Clause licensed](LICENSE).
+You can find Parrot community and join us [on the website](https://parrot.odroe.com/community), or follow our Twitter account [@odroeinc](https://twitter.com/odroeinc) to see our events.
