@@ -1,15 +1,15 @@
 part of parrot.cmd;
 
 /// Command runner provider.
-Future<CommandRunner<T>> _commandRunnerProvider<T>(ModuleRef ref) async {
-  final _CommandRunnerInfoImpl<T> info =
-      (await ref(CommandRunnrtInfo.provider<T>)) as _CommandRunnerInfoImpl<T>;
+Future<CommandRunner> _commandRunnerProvider(ModuleRef ref) async {
+  final _CommandRunnerInfoImpl info =
+      (await ref(CommandRunnrtInfo.provider)) as _CommandRunnerInfoImpl;
 
   if (info.commandRunner != null) {
     return info.commandRunner!;
   }
 
-  final runner = CommandRunner<T>(
+  final runner = CommandRunner(
     info.executableName,
     info.description,
     usageLineLength: info.usageLineLength,
@@ -17,6 +17,4 @@ Future<CommandRunner<T>> _commandRunnerProvider<T>(ModuleRef ref) async {
   );
 
   return runner;
-
-  return info.commandRunner = runner;
 }

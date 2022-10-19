@@ -1,6 +1,6 @@
 part of parrot.cmd;
 
-typedef CommandProvider<T> = Provider<Command<T>>;
+typedef CommandProvider = Provider<Command>;
 
 extension UseCommandExtension on Module {
   /// Register a top-level command.
@@ -8,21 +8,25 @@ extension UseCommandExtension on Module {
   /// ```dart
   /// final module = Module().useCommand(<COMMAND-PROVIDER>)
   /// ```
-  Module useCommand<T>(CommandProvider<T> command) =>
-      _UseCommandWrapper<T>(this, command);
+  Module useCommand(CommandProvider command) =>
+      _UseCommandWrapper(this, command);
+
+  /// Register commands to top-level.
+  Module useCommands(Iterable<CommandProvider> commands) =>
+      commands.fold(this, (module, command) => module.useCommand(command));
 }
 
-class _UseCommandWrapper<T> implements Module, UseModuleEffect {
+class _UseCommandWrapper implements Module, UseModuleEffect {
   const _UseCommandWrapper(this._module, this._command);
 
   final Module _module;
-  final CommandProvider<T> _command;
+  final CommandProvider _command;
 
   @override
   Set<Object> get exports => _module.exports;
 
   @override
-  Set<Module> get imports => {..._module.imports, CommandModule<T>()};
+  Set<Module> get imports => {..._module.imports, commandModule};
 
   @override
   Set<Provider> get providers => _module.providers;
@@ -30,12 +34,8 @@ class _UseCommandWrapper<T> implements Module, UseModuleEffect {
   @override
   Future<void> effect(ModuleRef ref, ModuleEffectNext next) async {
     return _resolveEffectNext(ref, next).call().then((void_) async {
-      final CommandRunner<T> runner = await ref(_commandRunnerProvider<T>);
-      final CommandRunner<T> runner2 = await ref(_commandRunnerProvider<T>);
-
-      print(runner == runner2);
-
-      final Command<T> command = await ref(_command);
+      final CommandRunner runner = await ref(_commandRunnerProvider);
+      final Command command = await ref(_command);
 
       runner.addCommand(command);
     });

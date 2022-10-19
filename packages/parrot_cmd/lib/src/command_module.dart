@@ -1,28 +1,12 @@
 part of parrot.cmd;
 
-class CommandModule<T> implements Module {
-  const CommandModule._internal();
+final Set<Provider> _sharedProviders = {
+  _commandRunnerProvider,
+  argParserProvider,
+  CommandRunnrtInfo.provider,
+};
 
-  static final Map<Type, CommandModule> _modules = <Type, CommandModule>{};
-
-  factory CommandModule() =>
-      _modules.putIfAbsent(T, () => CommandModule<T>._internal())
-          as CommandModule<T>;
-
-  @override
-  Set<Module> get imports => const {};
-
-  @override
-  Set<Object> get exports => {
-        _commandRunnerProvider<T>,
-        argParserProvider<T>,
-        CommandRunnrtInfo.provider<T>,
-      };
-
-  @override
-  Set<Provider> get providers => {
-        _commandRunnerProvider<T>,
-        argParserProvider<T>,
-        CommandRunnrtInfo.provider<T>,
-      };
-}
+final Module commandModule = Module(
+  providers: _sharedProviders,
+  exports: _sharedProviders,
+);

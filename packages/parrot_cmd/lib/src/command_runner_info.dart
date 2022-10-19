@@ -1,7 +1,7 @@
 part of parrot.cmd;
 
 /// Command runner info.
-abstract class CommandRunnrtInfo<T> {
+abstract class CommandRunnrtInfo {
   /// Set command executable name.
   set executableName(String name);
 
@@ -15,7 +15,7 @@ abstract class CommandRunnrtInfo<T> {
   set suggestionDistanceLimit(int limit);
 
   /// Custom command runner.
-  set commandRunner(CommandRunner<T> runner);
+  set commandRunner(CommandRunner runner);
 
   /// Command runner info provider.
   ///
@@ -23,22 +23,12 @@ abstract class CommandRunnrtInfo<T> {
   /// final info = await ref(CommandRunnrtInfo.provider); // CommandRunnrtInfo<dunamic>
   /// final info2 = await ref(CommandRunnrtInfo.provider<int>) // CommandRunnrtInfo<int>
   /// ```
-  static const CommandRunnrtInfo<T> Function<T>(ModuleRef ref) provider =
-      _CommandRunnerInfoImpl.upsert;
+  static final Provider<CommandRunnrtInfo> provider =
+      _CommandRunnerInfoImpl._internal;
 }
 
-class _CommandRunnerInfoImpl<T> implements CommandRunnrtInfo<T> {
-  _CommandRunnerInfoImpl._internal();
-
-  /// Cached command runner info.
-  static final Map<Type, _CommandRunnerInfoImpl> _cache =
-      <Type, _CommandRunnerInfoImpl>{};
-
-  /// Create new command runner info.
-  factory _CommandRunnerInfoImpl.upsert(ModuleRef ref) {
-    return _cache.putIfAbsent(T, () => _CommandRunnerInfoImpl<T>._internal())
-        as _CommandRunnerInfoImpl<T>;
-  }
+class _CommandRunnerInfoImpl implements CommandRunnrtInfo {
+  _CommandRunnerInfoImpl._internal(ModuleRef ref);
 
   @override
   String description = r'<description>';
@@ -53,5 +43,5 @@ class _CommandRunnerInfoImpl<T> implements CommandRunnrtInfo<T> {
   int? usageLineLength;
 
   @override
-  CommandRunner<T>? commandRunner;
+  CommandRunner? commandRunner;
 }

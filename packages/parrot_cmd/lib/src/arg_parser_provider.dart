@@ -1,7 +1,7 @@
 part of parrot.cmd;
 
-Future<ArgParser> argParserProvider<T>(ModuleRef ref) async {
-  final CommandRunner<T> runner = await ref(_commandRunnerProvider<T>);
+Future<ArgParser> argParserProvider(ModuleRef ref) async {
+  final CommandRunner runner = await ref(_commandRunnerProvider);
 
   return runner.argParser;
 }

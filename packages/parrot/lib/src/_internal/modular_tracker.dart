@@ -86,13 +86,23 @@ class ModularTracker implements ModuleRef {
       throw ParrotProviderNotFoundException(provider, module);
     }
 
+    // final String demo =
+    //     r"Closure: (ModuleRef) => Future<CommandRunner<int>> from Function '_commandRunnerProvider@21285999': static.";
+    // if (provider.toString() == demo) {
+    //   print('');
+    //   print(_store[provider]);
+    //   print(provider.hashCode);
+    //   print(_store);
+    //   print('--------------------------');
+    // }
+
     return _store.putIfAbsent(provider, () => provider(this)) as FutureOr<T>;
   }
 
   /// Calls exported provider.
   FutureOr<T> callExportedProvider<T>(Provider<T> provider) {
     // Find the module that exports this provider.
-    final Module? exported = findModuleThatExportedProvider(provider);
+    final Module? exported = findModuleThatExportedProvider<T>(provider);
 
     // If the module is not found, throws a [ParrotProviderNotFoundException].
     if (exported == null) {
@@ -115,7 +125,8 @@ class ModularTracker implements ModuleRef {
         final ModularTracker tracker =
             ModularTracker.lookup(module: exported, container: container);
 
-        final Module? result = tracker.findModuleThatExportedProvider(provider);
+        final Module? result =
+            tracker.findModuleThatExportedProvider<T>(provider);
         if (result != null) return result;
 
         // If the provider is exported, return true.

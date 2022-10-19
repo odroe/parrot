@@ -2,40 +2,32 @@ import 'package:args/command_runner.dart';
 import 'package:parrot/parrot.dart';
 import 'package:parrot_cmd/parrot_cmd.dart';
 
-class SayCommand extends Command<int> {
-  SayCommand(ModuleRef ref);
+class SayCommand extends Command {
+  SayCommand(ModuleRef ref) {
+    argParser.addOption('word',
+        abbr: 'w', help: 'Word to say', defaultsTo: "World");
+  }
 
   @override
-  String get description => 'demo';
+  String get description => 'Say something';
 
   @override
   String get name => 'say';
+
+  @override
+  Future<void> run() async {
+    final word = argResults!['word'] as String;
+
+    print('Hello $word');
+  }
 }
 
-final root = Module(imports: {
-  CommandModule<int>(),
-}, providers: {
-  SayCommand.new
-}).useCommand(SayCommand.new).useEffect((ref, next) async {
-  final info = await ref(CommandRunnrtInfo.provider<int>);
-
-  info.executableName = '111';
-
-  return next();
-}).useEffect((ref, next) async {
-  final info = await ref(CommandRunnrtInfo.provider<int>);
-
-  info.description = '22222';
-
-  return next();
-}).useEffect((ref, next) async {
-  final args = await ref(argParserProvider<int>);
-
-  return next();
-});
+final root = Module(
+  providers: {SayCommand.new},
+).useCommands([SayCommand.new]);
 
 void main(List<String> args) {
   final app = Parrot(root);
 
-  app.run<int>(args);
+  app.run(args);
 }
