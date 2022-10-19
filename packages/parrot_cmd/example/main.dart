@@ -1,17 +1,18 @@
 import 'package:parrot/parrot.dart';
 import 'package:parrot_cmd/parrot_cmd.dart';
 
-final sayCommand =
-    createClosureCommand('say', 'Say something', (result, ref) async {
+/// Create a command.
+final sayCommand = createClosureCommand('say', 'Say something', (result, ref) {
   print('Hello, Parrot!');
 });
 
-final root = Module(
-  providers: {sayCommand},
-).useCommands([sayCommand]);
+// Create a root module.
+final root = Module().useCommand(sayCommand);
 
 void main(List<String> args) {
+  // Create a Parrot application.
   final app = Parrot(root);
 
+  // Run command-line application.
   app.run(args);
 }

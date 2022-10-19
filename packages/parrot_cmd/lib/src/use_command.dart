@@ -29,7 +29,7 @@ class _UseCommandWrapper implements Module, UseModuleEffect {
   Set<Module> get imports => {..._module.imports, commandModule};
 
   @override
-  Set<Provider> get providers => _module.providers;
+  Set<Provider> get providers => {..._module.providers, _command};
 
   @override
   Future<void> effect(ModuleRef ref, ModuleEffectNext next) async {
