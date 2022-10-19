@@ -86,16 +86,6 @@ class ModularTracker implements ModuleRef {
       throw ParrotProviderNotFoundException(provider, module);
     }
 
-    // final String demo =
-    //     r"Closure: (ModuleRef) => Future<CommandRunner<int>> from Function '_commandRunnerProvider@21285999': static.";
-    // if (provider.toString() == demo) {
-    //   print('');
-    //   print(_store[provider]);
-    //   print(provider.hashCode);
-    //   print(_store);
-    //   print('--------------------------');
-    // }
-
     return _store.putIfAbsent(provider, () => provider(this)) as FutureOr<T>;
   }
 
