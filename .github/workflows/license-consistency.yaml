@@ -20,9 +20,9 @@ jobs:
         id: check
         run: |
           if [[ -n $(git status -s) ]]; then
-            echo "::set-output name=result::failure"
+            echo "result=failure" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=result::success"
+            echo "result=success" >> $GITHUB_OUTPUT
           fi
   fix:
     needs: check
