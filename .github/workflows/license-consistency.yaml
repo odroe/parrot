@@ -15,7 +15,7 @@ jobs:
       - name: Install dependencies
         run: dart pub get
       - name: Fix license consistency
-        run: dart run tools/bin.dart license-consistency -l LICENSE -f LICENSE -d packages
+        run: dart run tools/bin.dart license-consistency -l LICENSE -d packages
       - name: Check for fix license inconsistency
         id: check
         run: |
@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: dart pub get
       - name: Fix license consistency
-        run: dart run tools/bin.dart license-consistency -l LICENSE -f LICENSE -d packages
+        run: dart run tools/bin.dart license-consistency -l LICENSE -d packages
       - name: Commit changes
         run: |
           git config --local user.email "${{ github.actor }}@users.noreply.github.com"
