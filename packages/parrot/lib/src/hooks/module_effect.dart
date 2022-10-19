@@ -1,19 +1,28 @@
 library parrot.core.hooks;
 
-import '../_internal/internal_effect_module_wrapper.dart';
 import '../modular.dart';
 
 part '../_internal/hooks/effect_module_wrapper_impl.dart';
+
+/// Module effect next.
+///
+/// Call next effect.
+typedef ModuleEffectNext = Future<void> Function();
+
+/// Module effect.
+typedef ModuleEffect = Future<void> Function(
+    ModuleRef ref, ModuleEffectNext next);
 
 /// Use Module effect.
 ///
 /// Effects allow modules to run code for some custom actions after
 /// being loaded into Parrot.
 abstract class UseModuleEffect {
-  /// Define a effect provider.
+  /// Module effect.
   ///
-  /// This provider is not exposed to the module, but is evaluated after the module is loaded into Parrot.
-  Provider<void> get effect;
+  /// * [ref] is the module reference.
+  /// * [next] is the next effect.
+  Future<void> effect(ModuleRef ref, ModuleEffectNext next);
 }
 
 /// Module effect extension.
@@ -25,12 +34,10 @@ extension ModuleEffectExtension on Module {
   ///   providers: { ... },
   ///   imports: { ... },
   ///   exports: { ... },
-  /// ).useEffect((ref) {
+  /// ).useEffect((ref, next) async {
   ///   // Do something.
   /// });
   /// ```
-  Module useEffect(Provider<void> effect) =>
+  Module useEffect(ModuleEffect effect) =>
       _EffectModuleWrapperImpl(this, effect);
 }
-
-final module = Module().useEffect((ref) => null);

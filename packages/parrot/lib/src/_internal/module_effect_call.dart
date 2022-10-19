@@ -2,7 +2,6 @@ import 'dart:async';
 
 import '../hooks/module_effect.dart';
 import '../modular.dart';
-import 'internal_effect_module_wrapper.dart';
 import 'modular_tracker.dart';
 import 'module_container.dart';
 
@@ -45,28 +44,7 @@ class _ModuleEffectCallImpl implements ModuleEffectCall {
 
     // Call self effect.
     if (tracker.module is UseModuleEffect) {
-      final UseModuleEffect effectModule = tracker.module as UseModuleEffect;
-      final ModularTracker realTracker = resolveRealTracker(tracker);
-
-      await effectModule.effect(realTracker);
+      await (tracker.module as UseModuleEffect).effect(tracker, () async {});
     }
-  }
-
-  ModularTracker resolveRealTracker(ModularTracker tracker) {
-    final Module module = tracker.module;
-    final ModuleConatiner container = tracker.container;
-
-    if (module is InternalEffectModuleWrapper) {
-      final InternalEffectModuleWrapper wrapper =
-          module as InternalEffectModuleWrapper;
-      final ModularTracker tracker = ModularTracker.lookup(
-        module: wrapper.module,
-        container: container,
-      );
-
-      return resolveRealTracker(tracker);
-    }
-
-    return tracker;
   }
 }

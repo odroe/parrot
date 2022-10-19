@@ -1,7 +1,7 @@
 name: parrot
 description: > 
   Parrot is a modular Dart framework for building efficient, reliable, and scalable applications.
-version: 0.0.4
+version: 0.0.5
 repository: https://github.com/odroe/parrot
 
 environment:
