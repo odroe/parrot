@@ -10,13 +10,18 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-  # Maintain dependencies for tools
+  # Maintain dependencies for workspace
   - package-ecosystem: "pub"
-    directory: "/tools"
+    directory: "/"
     schedule:
       interval: "daily"
-  # Maintain dependencies for Parrot core
+  # Core
   - package-ecosystem: "pub"
     directory: "/packages/parrot"
+    schedule:
+      interval: "daily"
+  # Command
+  - package-ecosystem: "pub"
+    directory: "/packages/parrot_cmd"
     schedule:
       interval: "daily"

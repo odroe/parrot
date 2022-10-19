@@ -16,7 +16,7 @@ jobs:
         run: dart pub get
         working-directory: tools
       - name: Fix license consistency
-        run: dart run tools/license_consistency.dart -l LICENSE -f LICENSE -d packages
+        run: dart run tools/license_consistency.dart -l LICENSE -d packages
       - name: Check for fix license inconsistency
         id: check
         run: |
