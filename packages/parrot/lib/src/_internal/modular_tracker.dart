@@ -86,8 +86,7 @@ class ModularTracker implements ModuleRef {
       throw ParrotProviderNotFoundException(provider, module);
     }
 
-    /// Returns or creates the provider result.
-    return (_store[provider] ??= provider(this)) as FutureOr<T>;
+    return _store.putIfAbsent(provider, () => provider(this)) as FutureOr<T>;
   }
 
   /// Calls exported provider.
