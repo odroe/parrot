@@ -5,32 +5,28 @@ packages:
     dependency: "direct main"
     description:
       name: args
-      sha256: "4cab82a83ffef80b262ddedf47a0a8e56ee6fbf7fe21e6e768b02792034dd440"
-      url: "https://pub.dev"
+      url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.4.0"
+    version: "2.4.1"
   parrot:
     dependency: "direct main"
     description:
       name: parrot
-      sha256: b32f5f1c0ad3cdfd735e8fa5d22df3a2a60b40110b4f639854f513d74485f078
-      url: "https://pub.dev"
+      url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.6"
   parrot_cmd:
     dependency: "direct main"
     description:
       name: parrot_cmd
-      sha256: bb7b655af763e3a7cedc424f61b029bec3892b50e8b06ab597ed589bc2d29a28
-      url: "https://pub.dev"
+      url: "https://pub.dartlang.org"
     source: hosted
     version: "0.0.0"
   path:
     dependency: "direct main"
     description:
       name: path
-      sha256: "8829d8a55c13fc0e37127c29fedf290c102f4e40ae94ada574091fe0ff96c917"
-      url: "https://pub.dev"
+      url: "https://pub.dartlang.org"
     source: hosted
     version: "1.8.3"
 sdks:
